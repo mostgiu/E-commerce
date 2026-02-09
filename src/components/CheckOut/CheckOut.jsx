@@ -1,13 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
 import Style from "./CheckOut.module.css";
 import { useFormik } from "formik";
+import * as yup from "yup";
 import { CartContext } from "../Context/CartContext";
 import { useLocation } from "react-router-dom";
+
+// Validation schema
+const validationSchema = yup.object({
+  Details: yup
+    .string("Enter your address details")
+    .required("Address details is required"),
+  phone: yup
+    .string("Enter your phone number")
+    .matches(/^[0-9]{10,}$/, "Phone must be at least 10 digits")
+    .required("Phone number is required"),
+  city: yup
+    .string("Enter your city")
+    .required("City is required"),
+});
 
 export default function CheckOut() {
   let { onlinePayment } = useContext(CartContext);
   let location = useLocation();
   const [paymentType, setpaymentType] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setpaymentType(location.state?.paymentMethod);
@@ -22,8 +38,11 @@ export default function CheckOut() {
       phone: "",
       city: "",
     },
-    onSubmit: (values) => {
-      payOnline(values);
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      setIsSubmitting(true);
+      await payOnline(values);
+      setIsSubmitting(false);
     },
   });
   async function payOnline(values) {
@@ -61,8 +80,8 @@ export default function CheckOut() {
               Details
             </label>
           </div>
-          {formik.errors.text && formik.touched.text && (
-            <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
+          {formik.errors.Details && formik.touched.Details && (
+            <p className="text-red-500 text-sm mt-1">{formik.errors.Details}</p>
           )}
 
           <div className="relative z-0 w-full mb-5 group">
@@ -114,8 +133,19 @@ export default function CheckOut() {
               city
             </label>
           </div>
-          <button className=" cursor-pointer hover:bg-blue-300 bg-blue-400 text-white px-5 py-3  text-xl rounded-md">
-            Pay Now
+          {formik.errors.city && formik.touched.city && (
+            <p className="text-red-500 text-sm mt-1">{formik.errors.city}</p>
+          )}
+          <button
+            type="submit"
+            disabled={!formik.isValid || isSubmitting || !formik.dirty}
+            className={`cursor-pointer px-5 py-3 text-xl rounded-md text-white font-semibold transition-all ${
+              !formik.isValid || isSubmitting || !formik.dirty
+                ? "bg-gray-400 cursor-not-allowed opacity-60"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {isSubmitting ? "Processing..." : "Pay Now"}
           </button>
         </form>
       </div>
