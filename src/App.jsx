@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import { useContext } from "react";
 import Layout from "./components/Layout/Layout";
 import Products from "./components/Products/Products";
@@ -21,11 +21,12 @@ import AllOrders from "./components/AllOrders/AllOrders";
 import CheckOut from "./components/CheckOut/CheckOut";
 import "./App.css";
 import { Toaster } from "react-hot-toast";
+
 function App() {
   const { token } = useContext(TokenContext);
   const queryClient = new QueryClient();
 
-  const router = createBrowserRouter([
+  const router = createHashRouter([
     {
       path: "/",
       element: <Layout />,
@@ -109,10 +110,11 @@ function App() {
       ],
     },
   ]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-left" reverseOrder={false} />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
