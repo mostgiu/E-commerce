@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Style from "./Register.module.css";
 import { useFormik } from "formik";
 import axios from "axios";

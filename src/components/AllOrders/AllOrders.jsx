@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect } from "react";
 import Style from './AllOrders.module.css'
 export default function AllOrders() {
   useEffect(() => {}, []);

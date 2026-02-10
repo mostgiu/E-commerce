@@ -1,5 +1,6 @@
 
-const flowbite=require("flowbite-react/tailwind")
+/* eslint-env node */
+import flowbite from "flowbite-react/tailwind";
 export default {
   content: [
     "./index.html",

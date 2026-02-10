@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Style from "./CheckOut.module.css";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { CartContext } from "../Context/CartContext";
+import { CartContext } from "../Context/contexts";
 import { useLocation } from "react-router-dom";
 
 // Validation schema
@@ -22,13 +22,8 @@ const validationSchema = yup.object({
 export default function CheckOut() {
   let { onlinePayment } = useContext(CartContext);
   let location = useLocation();
-  const [paymentType, setpaymentType] = useState();
+  const [paymentType] = useState(location.state?.paymentMethod);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    setpaymentType(location.state?.paymentMethod);
-    console.log("Payment Method:", location.state?.paymentMethod);
-  }, [location]);
 
   // Log payment method passed from Cart via navigation state
   console.log("Location state:", location);

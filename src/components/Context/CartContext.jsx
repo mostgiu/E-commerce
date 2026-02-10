@@ -1,9 +1,8 @@
-import { createContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { CartContext } from "./contexts";
 
-export const CartContext = createContext();
 export default function CartContextProvider(props) {
   const [noOfCartItems, setNoOfCartItems] = useState(null);
   const [totalCartAmount, setTotalcartAmount] = useState(0);

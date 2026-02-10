@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Style from "./Login.module.css";
 import { useFormik } from "formik";
 import axios from "axios";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { TokenContext } from "../Context/TokenContext";
+import { TokenContext } from "../Context/contexts";
 import { useContext } from "react";
 
 
 export default function Login() {
-  let {token, setToken} = useContext(TokenContext);
+  let { setToken } = useContext(TokenContext);
   const [userMessage, setUserMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);

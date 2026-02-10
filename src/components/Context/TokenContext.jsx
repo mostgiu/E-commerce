@@ -1,6 +1,5 @@
-import { createContext, useState } from "react";
-
-export const TokenContext = createContext();
+import { useState } from "react";
+import { TokenContext } from "./contexts";
 
 export default function TokenContextProvider({ children }) {
   const [token, setToken] = useState(

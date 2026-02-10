@@ -1,5 +1,4 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { useContext } from "react";
 import Layout from "./components/Layout/Layout";
 import Products from "./components/Products/Products";
 import Cart from "./components/Cart/Cart";
@@ -12,7 +11,7 @@ import Home from "./components/Home/Home";
 import About from "./components/About/About";
 import ProtectedRoutes from "./components/ProtectedRoutes/Protectedroutes";
 import ProtectedAuth from "./components/ProtectedAuth/ProtectedAuth";
-import { TokenContext } from "./components/Context/TokenContext";
+// Token context is not used here; removed unused import
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import ProductDetails from "./components/ProductDetails/ProductDetails";
@@ -23,7 +22,6 @@ import "./App.css";
 import { Toaster } from "react-hot-toast";
 
 function App() {
-  const { token } = useContext(TokenContext);
   const queryClient = new QueryClient();
 
   const router = createHashRouter([

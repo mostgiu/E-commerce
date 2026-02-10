@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.png";
-import { TokenContext } from "../Context/TokenContext.jsx";
+import { TokenContext, CartContext } from "../Context/contexts";
 import { useContext } from "react";
-import { CartContext } from "../Context/CartContext.jsx";
-import { useSelector } from "react-redux";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   let { noOfCartItems, getToCart } = useContext(CartContext);
   let { token, setToken } = useContext(TokenContext);
-  let { counter } = useSelector((state) => state.productRed);
 
   const linkClasses = ({ isActive }) =>
     `pb-1 border-b-2 transition-all ${

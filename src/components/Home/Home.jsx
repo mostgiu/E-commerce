@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Style from "./Home.module.css";
 import FeatureProducts from "../FeatureProducts/FeatureProducts";
 import MainSlider from "../MainSlider/MainSlider";

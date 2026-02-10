@@ -14,14 +14,13 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, DropdownItem, DropdownDivider } from "flowbite-react";
 import Style from "./Cart.module.css";
-import { CartContext } from "../Context/CartContext";
+import { CartContext } from "../Context/contexts";
 import Loader from "../Loader/Loader";
 
 export default function Cart() {
   // ============ STATE MANAGEMENT ============
   const [cartItems, setCartItems] = useState([]);
-  // selected payment method for debugging / route state
-  const [paymentMethod, setPaymentMethod] = useState(null);
+  // selected payment method for debugging / route state (not used)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -32,7 +31,6 @@ export default function Cart() {
     updateProduct,
     ClearCart,
     totalCartAmount,
-    noOfCartItems,
   } = useContext(CartContext);
 
   const navigate = useNavigate();
@@ -87,8 +85,12 @@ export default function Cart() {
   /**
    * Fetch cart items on component mount
    */
+  // Fetch cart items on mount. Defer call to avoid synchronous setState in effect.
   useEffect(() => {
-    getAllCart();
+    const t = setTimeout(() => {
+      getAllCart();
+    }, 0);
+    return () => clearTimeout(t);
   }, []);
 
   // ============ RENDER ============
@@ -328,19 +330,17 @@ export default function Cart() {
               {/* Payment Method Dropdown Menu */}
               <Dropdown label="Payment Options" color="blue">
                 <DropdownItem
-                  onClick={() => {
-                    setPaymentMethod("cash");
-                    navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });
-                  }}
-                >
+                    onClick={() => {
+                      navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });
+                    }}
+                  >
                   💵 Cash
                 </DropdownItem>
                 <DropdownItem
-                  onClick={() => {
-                    setPaymentMethod("credit_card");
-                    navigate("/checkout", { state: { paymentMethod: "credit card" } });
-                  }}
-                >
+                    onClick={() => {
+                      navigate("/checkout", { state: { paymentMethod: "credit card" } });
+                    }}
+                  >
                   💳 Credit Card
                 </DropdownItem>
               </Dropdown>

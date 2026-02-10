@@ -1,21 +1,21 @@
-import React, { use, useEffect, useState } from "react";
+import React from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { CartContext } from "../Context/CartContext";
+import { CartContext } from "../Context/contexts";
 import { useContext } from "react";
 
 export default function FeatureProducts() {
   let { addToCart } = useContext(CartContext);
   async function addProductToCart(productId) {
-    let response = await addToCart(productId);
+    await addToCart(productId);
   }
   function getFeatureProducts() {
     return axios.get("https://ecommerce.routemisr.com/api/v1/products");
   }
 
-  let { data, isLoading, isFetching, error, isError, category } = useQuery({
+  let { data, isLoading } = useQuery({
     queryKey: ["FeatureProducts"],
     queryFn: getFeatureProducts,
   });

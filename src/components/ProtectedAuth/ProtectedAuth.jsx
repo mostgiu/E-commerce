@@ -1,8 +1,8 @@
-import React, { useEffect,useState } from "react";
+import React from "react";
 import Style from './ProtectedAuth.module.css'
 import { Navigate } from "react-router-dom";
 import { useContext } from "react";
-import { TokenContext } from "../Context/TokenContext";
+import { TokenContext } from "../Context/contexts";
 
 export default function ProtectedAuth({ children }) {
   const { token } = useContext(TokenContext);

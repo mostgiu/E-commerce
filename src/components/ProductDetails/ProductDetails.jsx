@@ -4,16 +4,13 @@ import axios from "axios";
 import Slick from "react-slick";
 import Loader from "../Loader/Loader";
 import { Link } from "react-router-dom";
-import { CartContext } from "../Context/CartContext";
+import { CartContext } from "../Context/contexts";
 import {useContext} from "react";
 export default function ProductDetails() {
   const { id, categoryName } = useParams();
   let { addToCart } = useContext(CartContext);
   async function addProductToCart(productId) {
-    let response = await addToCart(productId);
-  }
-  function getFeatureProducts() {
-    return axios.get("https://ecommerce.routemisr.com/api/v1/products");
+    await addToCart(productId);
   }
 
   const [relatedProducts, setRelatedProducts] = useState([]);

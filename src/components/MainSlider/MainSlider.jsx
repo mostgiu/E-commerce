@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from "react";
+import React from "react";
 import Style from './MainSlider.module.css'
 import slider1 from '../../assets/slider1.jpeg'
 import slider2 from '../../assets/slider2.jpeg'
