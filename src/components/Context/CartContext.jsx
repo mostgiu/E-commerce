@@ -8,19 +8,13 @@ export default function CartContextProvider(props) {
   const [totalCartAmount, setTotalcartAmount] = useState(0);
   const [cartId, setCartId] = useState(null); // Store cart ID for checkout
   
-
-  let headers = {
+  // Function to get fresh headers with current token
+  const getHeaders = () => ({
     token: localStorage.getItem("userToken"),
-  };
-
-  /**
-   * Debug: Log token status
-   */
-  if (!headers.token) {
-    console.warn("⚠️ Warning: No userToken found in localStorage. Please log in first.");
-  }
+  });
 
   async function getToCart() {
+    const headers = getHeaders();
     if (!headers.token) {
       console.error("❌ Error: No authentication token. User not logged in.");
       return { 
@@ -45,6 +39,7 @@ export default function CartContextProvider(props) {
       });
   }
   async function addToCart(productId) {
+    const headers = getHeaders();
     return await axios
       .post(
         "https://ecommerce.routemisr.com/api/v1/cart",
@@ -67,7 +62,8 @@ export default function CartContextProvider(props) {
 
   /* remove item from cart */
 
-  async function removeCartItem(productId) {
+  asconst headers = getHeaders();
+    ync function removeCartItem(productId) {
     return await axios
       .delete(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`, {
         headers: headers,
@@ -87,7 +83,8 @@ export default function CartContextProvider(props) {
 
   /* update Producy */
 
-  async function updateProduct(productId, count) {
+  asconst headers = getHeaders();
+    ync function updateProduct(productId, count) {
     return await axios
       .put(
         `https://ecommerce.routemisr.com/api/v1/cart/${productId}`,
@@ -111,7 +108,8 @@ export default function CartContextProvider(props) {
       });
   }
 
-  /* Clear Cart Function */
+  /*const headers = getHeaders();
+     Clear Cart Function */
   async function ClearCart() {
     return await axios
       .delete("https://ecommerce.routemisr.com/api/v1/cart", {
@@ -132,7 +130,8 @@ export default function CartContextProvider(props) {
   async function onlinePayment(shippingDetails) {
     if (!cartId) {
       console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
-      return { status: 400, data: { error: "No cart found" } };
+      retuheaders = getHeaders();
+    const rn { status: 400, data: { error: "No cart found" } };
     }
     const redirectUrl = window.location.origin;
     return await axios
@@ -158,6 +157,7 @@ export default function CartContextProvider(props) {
 
 async function cashPayment(shippingDetails) {
     if (!cartId) {
+    const headers = getHeaders();
       console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
       return { status: 400, data: { error: "No cart found" } };
     }
