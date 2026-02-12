@@ -1,5 +1,5 @@
 import React, { useEffect,useState } from "react";
-import Style from './BrandDetails.module.css'
+import Style from './brandDetails.module.css'
 import { useParams } from "react-router-dom";
 import axios from "axios";
 export default function BrandDetails() {

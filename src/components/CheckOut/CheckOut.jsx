@@ -20,7 +20,7 @@ const validationSchema = yup.object({
 });
 
 export default function CheckOut() {
-  let { onlinePayment } = useContext(CartContext);
+  let { onlinePayment , cashPayment } = useContext(CartContext);
   let location = useLocation();
   const [paymentType] = useState(location.state?.paymentMethod);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +41,11 @@ export default function CheckOut() {
     },
   });
   async function payOnline(values) {
-    await onlinePayment(values);
+    if(paymentType === "credit card"){
+      await onlinePayment(values);
+    }else{
+      await cashPayment(values);
+    }
   }
 
   return (

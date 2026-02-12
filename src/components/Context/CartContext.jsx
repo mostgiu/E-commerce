@@ -134,9 +134,10 @@ export default function CartContextProvider(props) {
       console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
       return { status: 400, data: { error: "No cart found" } };
     }
+    const redirectUrl = window.location.origin;
     return await axios
       .post(
-        `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=http://localhost:5177`,{
+        `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=${redirectUrl}`,{
           shippingDetails
         },
         {
@@ -155,6 +156,34 @@ export default function CartContextProvider(props) {
       });
   }
 
+async function cashPayment(shippingDetails) {
+    if (!cartId) {
+      console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
+      return { status: 400, data: { error: "No cart found" } };
+    }
+    return await axios
+      .post(
+        `https://ecommerce.routemisr.com/api/v1/orders/${cartId}`,{
+          shippingDetails
+        },
+        {
+          headers
+        }
+      )
+      .then((response) => {
+        console.log(response.data.session.url);
+       
+        return response;
+        
+      })
+      .catch((error) => {
+        console.error("❌ Online Payment Error:", error.response?.status, error.response?.data);
+        return error;
+      });
+  }
+
+
+
   return (
     <CartContext.Provider
       value={{
@@ -167,6 +196,7 @@ export default function CartContextProvider(props) {
         totalCartAmount,
         cartId,
         onlinePayment,
+        cashPayment
       }}
     >
       {props.children}
