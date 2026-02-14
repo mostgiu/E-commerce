@@ -4,11 +4,11 @@ import Products from "./components/Products/Products";
 import Cart from "./components/Cart/Cart";
 import Brands from "./components/Brands/Brands";
 import Categories from "./components/Categories/Categories";
+import CategoryProducts from "./components/CategoryProducts/CategoryProducts";
 import Login from "./components/Login/Login";
 import Register from "./components/Register/Register";
 import Notfound from "./components/Notfound/Notfound";
 import Home from "./components/Home/Home";
-import About from "./components/About/About";
 import ProtectedRoutes from "./components/ProtectedRoutes/Protectedroutes";
 import ProtectedAuth from "./components/ProtectedAuth/ProtectedAuth";
 // Token context is not used here; removed unused import
@@ -31,11 +31,7 @@ function App() {
       children: [
         {
           index: true,
-          element: (
-            <ProtectedRoutes>
-              <Home />
-            </ProtectedRoutes>
-          ),
+          element: <Home />,
         },
         {
           path: "brandsDetails/:id",
@@ -87,6 +83,7 @@ function App() {
           ),
         },
         { path: "categories", element: <Categories /> },
+        { path: "categories/:id", element: <CategoryProducts /> },
         {
           path: "login",
           element: (
@@ -103,7 +100,6 @@ function App() {
             </ProtectedAuth>
           ),
         },
-        { path: "about", element: <About /> },
         { path: "*", element: <Notfound /> },
       ],
     },

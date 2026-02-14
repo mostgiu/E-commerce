@@ -1,11 +1,9 @@
 import React from "react";
-import Style from './MainSlider.module.css'
-import slider1 from '../../assets/slider1.jpeg'
-import slider2 from '../../assets/slider2.jpeg'
-import slider3 from '../../assets/slider3.jpeg'  
-import slider4 from '../../assets/slider4.jpeg'  
-import slider5 from '../../assets/slider5.jpeg'  
-import slider6 from '../../assets/slider6.png'  
+import maincarusel1 from '../../assets/maincarusel-1.jpg'
+import maincarusel2 from '../../assets/maincarusel-2.jpg'
+import maincarusel3 from '../../assets/maincarusel-3.jpg'
+import mainSlider4 from '../../assets/mainSlider-4.jpg'
+
 import Slick from "react-slick";
 
 export default function MainSlider() {
@@ -23,26 +21,32 @@ export default function MainSlider() {
       { breakpoint: 768, settings: { slidesToShow: 1 } },
     ]
   };
-  return <>
-    <Slider {...settings}>
-            <div className="px-1 sm:px-2">
-              <img src={slider1} alt="slider1" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
+  const newSlidesModules = import.meta.glob("../../assets/components/*.{png,jpg,jpeg,webp,avif,svg}", {
+    eager: true,
+    import: "default",
+  });
+
+  const newSlides = Object.values(newSlidesModules);
+  const fallbackSlides = [maincarusel1, maincarusel2, maincarusel3, mainSlider4];
+  const slides = newSlides.length > 0 ? newSlides : fallbackSlides;
+
+  return (
+    <div className="rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-white">
+      <Slider {...settings}>
+        {slides.map((slide, index) => (
+          <div key={index} className="px-0">
+            <div className="relative">
+              <img src={slide} alt={`slider-${index + 1}`} className="w-full h-44 sm:h-60 md:h-72 lg:h-96 object-cover" />
+              <div className="absolute inset-0 bg-linear-to-r from-black/55 via-black/20 to-transparent"></div>
+              <div className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 text-white max-w-xs sm:max-w-md">
+                <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-slate-200 mb-2">New Season</p>
+                <h2 className="text-lg sm:text-3xl font-bold leading-tight">Discover Trending Picks</h2>
+                <p className="text-xs sm:text-sm text-slate-100 mt-2">Fresh arrivals with unbeatable daily deals.</p>
+              </div>
             </div>
-            <div className="px-1 sm:px-2">
-              <img src={slider2} alt="slider2" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
-            </div>
-            <div className="px-1 sm:px-2">
-              <img src={slider3} alt="slider3" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
-            </div>
-            <div className="px-1 sm:px-2">
-              <img src={slider4} alt="slider4" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
-            </div>
-            <div className="px-1 sm:px-2">
-              <img src={slider5} alt="slider5" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
-            </div>
-            <div className="px-1 sm:px-2">
-              <img src={slider6} alt="slider6" className="w-full h-40 sm:h-56 md:h-64 lg:h-80 object-cover rounded-lg"/>
-            </div>
-          </Slider>
-  </>;
+          </div>
+        ))}
+      </Slider>
+    </div>
+  );
 }

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Slick from "react-slick";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function CategorySlider() {
   const settings = {
@@ -33,15 +34,22 @@ const Slider = Slick.default ?? Slick;
   if (isLoading) return null;
 
   return (
-    <div className="px-2 sm:px-4 mb-6">
+    <div className="px-0 mb-1">
       <Slider {...settings}>
         {data.data.data.map((cat) => (
-          <div key={cat._id} className="px-1 sm:px-2">
-            <img
-              src={cat.image}
-              alt={cat.name}
-              className="w-full h-24 sm:h-32 md:h-40 object-cover rounded-lg"
-            />
+          <div key={cat._id} className="px-1.5 sm:px-2.5">
+            <Link
+              to={`/categories/${cat._id}`}
+              state={{ categoryName: cat.name }}
+              className="block h-full bg-slate-50 border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            >
+              <img
+                src={cat.image}
+                alt={cat.name}
+                className="w-full h-36 object-cover object-center"
+              />
+              <p className="text-center text-sm font-medium text-slate-700 py-2 truncate px-2">{cat.name}</p>
+            </Link>
           </div>
         ))}
       </Slider>

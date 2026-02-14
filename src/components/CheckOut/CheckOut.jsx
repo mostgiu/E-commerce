@@ -20,9 +20,9 @@ const validationSchema = yup.object({
 });
 
 export default function CheckOut() {
-  let { onlinePayment , cashPayment } = useContext(CartContext);
+  let { onlinePayment, cashPayment } = useContext(CartContext);
   let location = useLocation();
-  const [paymentType] = useState(location.state?.paymentMethod);
+  const [paymentType] = useState(location.state?.paymentMethod || "Payment");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Log payment method passed from Cart via navigation state
@@ -41,19 +41,27 @@ export default function CheckOut() {
     },
   });
   async function payOnline(values) {
-    if(paymentType === "credit card"){
+    if (paymentType === "credit card") {
       await onlinePayment(values);
-    }else{
+    } else {
       await cashPayment(values);
     }
   }
 
   return (
-    <>
-      <div className="  h-200 flex items-center content-center">
-        <form onSubmit={formik.handleSubmit} className="w-1/2 mx-auto ">
-          <h1 className=" text-emerald-400 text-2xl">{paymentType}</h1>
-          <div className="relative z-0 w-full mb-5 group ">
+    <div className="min-h-[calc(100vh-11rem)] flex items-center justify-center py-6 px-3">
+      <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-7">
+        <div className="mb-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2">Checkout</p>
+          <h1 className="text-2xl font-bold text-slate-900">{paymentType}</h1>
+          <p className="text-sm text-slate-500 mt-1">Enter your shipping details to complete payment.</p>
+        </div>
+
+        <form onSubmit={formik.handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="Details" className="block text-sm font-medium text-slate-700 mb-1">
+              Address Details
+            </label>
             <input
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -61,29 +69,18 @@ export default function CheckOut() {
               type="text"
               name="Details"
               id="Details"
-              className="block py-2.5 px-0 w-full text-sm text-heading 
-              bg-transparent border-0 border-b-2 border-default-medium 
-              appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
-              placeholder=" "
+              className="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
+              placeholder="Street, building, apartment"
             />
-            <label
-              htmlFor="Details"
-              id="Details"
-              className="absolute text-sm text-body duration-300 
-              transform -translate-y-6 scale-75 top-3 -z-10 origin-[left] 
-              peer-focus:start-0 peer-focus:text-fg-brand
-               peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
-                peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 
-                rtl:peer-focus:left-auto"
-            >
-              Details
-            </label>
+            {formik.errors.Details && formik.touched.Details && (
+              <p className="text-red-500 text-sm mt-1">{formik.errors.Details}</p>
+            )}
           </div>
-          {formik.errors.Details && formik.touched.Details && (
-            <p className="text-red-500 text-sm mt-1">{formik.errors.Details}</p>
-          )}
 
-          <div className="relative z-0 w-full mb-5 group">
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">
+              Phone Number
+            </label>
             <input
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -91,22 +88,18 @@ export default function CheckOut() {
               type="tel"
               name="phone"
               id="phone"
-              className="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
-              placeholder=" "
+              className="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
+              placeholder="01xxxxxxxxx"
             />
-            <label
-              htmlFor="phone"
-              id="phone"
-              className="absolute text-sm text-body duration-300 transform -translate-y-6 scale-75 top-3 -z-10  peer-focus:start-0 peer-focus:text-fg-brand peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
-            >
-              phone
-            </label>
             {formik.errors.phone && formik.touched.phone && (
               <p className="text-red-500 text-sm mt-1">{formik.errors.phone}</p>
             )}
           </div>
 
-          <div className="relative z-0 w-full mb-5 group">
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1">
+              City
+            </label>
             <input
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
@@ -114,40 +107,31 @@ export default function CheckOut() {
               type="text"
               name="city"
               id="city"
-              className="block py-2.5 px-0 w-full text-sm text-heading 
-              bg-transparent border-0 border-b-2 border-default-medium 
-              appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
-              placeholder=" "
+              className="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
+              placeholder="Cairo"
             />
-            <label
-              htmlFor="city"
-              id="city"
-              className="absolute text-sm text-body duration-300 
-              transform -translate-y-6 scale-75 top-3 -z-10 origin-[left] 
-              peer-focus:start-0 peer-focus:text-fg-brand
-               peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
-                peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 
-                rtl:peer-focus:left-auto"
-            >
-              city
-            </label>
+            {formik.errors.city && formik.touched.city && (
+              <p className="text-red-500 text-sm mt-1">{formik.errors.city}</p>
+            )}
           </div>
-          {formik.errors.city && formik.touched.city && (
-            <p className="text-red-500 text-sm mt-1">{formik.errors.city}</p>
-          )}
+
           <button
             type="submit"
             disabled={!formik.isValid || isSubmitting || !formik.dirty}
-            className={`cursor-pointer px-5 py-3 text-xl rounded-md text-white font-semibold transition-all ${
+            className={`w-full cursor-pointer px-5 py-3 text-base rounded-lg font-semibold transition-all border ${
               !formik.isValid || isSubmitting || !formik.dirty
-                ? "bg-gray-400 cursor-not-allowed opacity-60"
-                : "bg-blue-600 hover:bg-blue-700"
+                ? "bg-slate-200 text-slate-500 border-slate-200 cursor-not-allowed"
+                : "bg-black text-white border-black hover:bg-white hover:text-black"
             }`}
           >
-            {isSubmitting ? "Processing..." : "Pay Now"}
+            {isSubmitting
+              ? "Processing..."
+              : paymentType === "cash On Delivery"
+                ? "Place Cash Order"
+                : "Pay Now"}
           </button>
         </form>
       </div>
-    </>
+    </div>
   );
 }

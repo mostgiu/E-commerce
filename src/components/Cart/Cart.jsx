@@ -110,7 +110,7 @@ export default function Cart() {
                 setIsLoading(true);
                 getAllCart();
               }}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black transition cursor-pointer"
             >
               Try Again
             </button>
@@ -167,7 +167,7 @@ export default function Cart() {
                             updateCartProduct(item.product.id, item.count - 1)
                           }
                           type="button"
-                          className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-8 w-8 text-sm"
+                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors"
                         >
                           −
                         </button>
@@ -179,7 +179,7 @@ export default function Cart() {
                             updateCartProduct(item.product.id, item.count + 1)
                           }
                           type="button"
-                          className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-8 w-8 text-sm"
+                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors"
                         >
                           +
                         </button>
@@ -273,7 +273,7 @@ export default function Cart() {
                                 )
                               }
                               type="button"
-                              className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-7 w-7 text-sm"
+                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors"
                             >
                               −
                             </button>
@@ -288,7 +288,7 @@ export default function Cart() {
                                 )
                               }
                               type="button"
-                              className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-7 w-7 text-sm"
+                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors"
                             >
                               +
                             </button>
@@ -323,12 +323,12 @@ export default function Cart() {
 
             {/* ====== CART FOOTER ====== */}
             {/* Display total amount and payment options dropdown */}
-            <div className="mt-4 p-4 bg-gray-100 rounded-lg flex justify-between items-center">
-              <span className="text-lg font-bold">Total Amount</span>
-              <span className="text-xl font-bold">{totalCartAmount} EGP</span>
+            <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
+              <span className="text-lg font-bold text-slate-800">Total Amount</span>
+              <span className="text-xl font-bold text-slate-900">{totalCartAmount} EGP</span>
               
               {/* Payment Method Dropdown Menu */}
-              <Dropdown label="Payment Options" color="blue">
+              <Dropdown label="Payment Options" color="dark">
                 <DropdownItem
                     onClick={() => {
                       navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });

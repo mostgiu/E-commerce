@@ -62,8 +62,8 @@ export default function CartContextProvider(props) {
 
   /* remove item from cart */
 
-  asconst headers = getHeaders();
-    ync function removeCartItem(productId) {
+  async function removeCartItem(productId) {
+    const headers = getHeaders();
     return await axios
       .delete(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`, {
         headers: headers,
@@ -83,8 +83,8 @@ export default function CartContextProvider(props) {
 
   /* update Producy */
 
-  asconst headers = getHeaders();
-    ync function updateProduct(productId, count) {
+  async function updateProduct(productId, count) {
+    const headers = getHeaders();
     return await axios
       .put(
         `https://ecommerce.routemisr.com/api/v1/cart/${productId}`,
@@ -108,9 +108,9 @@ export default function CartContextProvider(props) {
       });
   }
 
-  /*const headers = getHeaders();
-     Clear Cart Function */
+  /* Clear Cart Function */
   async function ClearCart() {
+    const headers = getHeaders();
     return await axios
       .delete("https://ecommerce.routemisr.com/api/v1/cart", {
         headers: headers,
@@ -118,7 +118,7 @@ export default function CartContextProvider(props) {
       .then((response) => {
         toast.success(response.data.message, { duration: 1000 });
         setNoOfCartItems(0);
-        setTotalcartAmount();
+        setTotalcartAmount(0);
         return response;
       })
       .catch((error) => {
@@ -128,26 +128,18 @@ export default function CartContextProvider(props) {
   }
 
   async function onlinePayment(shippingDetails) {
+    const headers = getHeaders();
     if (!cartId) {
       console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
-      retuheaders = getHeaders();
-    const rn { status: 400, data: { error: "No cart found" } };
+      return { status: 400, data: { error: "No cart found" } };
     }
     const redirectUrl = window.location.origin;
     return await axios
-      .post(
-        `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=${redirectUrl}`,{
-          shippingDetails
-        },
-        {
-          headers
-        }
-      )
+      .post(`https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=${redirectUrl}`, { shippingDetails }, { headers })
       .then((response) => {
         console.log(response.data.session.url);
-        window.location.href=response.data.session.url
+        window.location.href = response.data.session.url;
         return response;
-        
       })
       .catch((error) => {
         console.error("❌ Online Payment Error:", error.response?.status, error.response?.data);
@@ -155,29 +147,19 @@ export default function CartContextProvider(props) {
       });
   }
 
-async function cashPayment(shippingDetails) {
-    if (!cartId) {
+  async function cashPayment(shippingDetails) {
     const headers = getHeaders();
+    if (!cartId) {
       console.error("❌ Error: No cart ID found. Cannot proceed with payment.");
       return { status: 400, data: { error: "No cart found" } };
     }
     return await axios
-      .post(
-        `https://ecommerce.routemisr.com/api/v1/orders/${cartId}`,{
-          shippingDetails
-        },
-        {
-          headers
-        }
-      )
+      .post(`https://ecommerce.routemisr.com/api/v1/orders/${cartId}`, { shippingDetails }, { headers })
       .then((response) => {
-        console.log(response.data.session.url);
-       
         return response;
-        
       })
       .catch((error) => {
-        console.error("❌ Online Payment Error:", error.response?.status, error.response?.data);
+        console.error("❌ Cash Payment Error:", error.response?.status, error.response?.data);
         return error;
       });
   }

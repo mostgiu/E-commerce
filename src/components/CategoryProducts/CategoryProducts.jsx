@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import Loader from "../Loader/Loader";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
+import Loader from "../Loader/Loader";
 import { CartContext } from "../Context/contexts";
-import { useContext } from "react";
 
-export default function FeatureProducts() {
-  let { addToCart } = useContext(CartContext);
+export default function CategoryProducts() {
+  const { id } = useParams();
+  const location = useLocation();
+  const categoryName = location.state?.categoryName || "Category";
+  const { addToCart } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   async function addProductToCart(productId) {
@@ -25,21 +27,46 @@ export default function FeatureProducts() {
       return next;
     });
   }
-  function getFeatureProducts() {
+
+  function getProducts() {
     return axios.get("https://ecommerce.routemisr.com/api/v1/products");
   }
 
-  let { data, isLoading } = useQuery({
-    queryKey: ["FeatureProducts"],
-    queryFn: getFeatureProducts,
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["categoryProducts", id],
+    queryFn: getProducts,
   });
-  return (
-    <div className="mx-auto px-1 sm:px-0">
-      {isLoading ? (
+
+  const filteredProducts =
+    data?.data?.data?.filter((product) => product.category?._id === id) || [];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
         <Loader />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <p className="text-center text-red-500 py-8">Failed to load products.</p>;
+  }
+
+  return (
+    <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-7xl py-6 sm:py-8">
+      <div className="bg-linear-to-r from-indigo-600 to-blue-500 rounded-2xl p-5 sm:p-7 text-white mb-6 shadow-lg">
+        <p className="text-xs uppercase tracking-[0.2em] text-indigo-100 mb-2">Category Collection</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">{categoryName} Products</h1>
+        <p className="text-sm text-indigo-100 mt-2">Browse curated items and add your favorites to cart.</p>
+      </div>
+
+      {filteredProducts.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 text-center text-slate-600">
+          No products found for this category.
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 py-2 w-full">
-          {data?.data?.data.map((product) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {filteredProducts.map((product) => (
             <div
               key={product._id}
               className="group bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 relative w-full overflow-hidden"
@@ -52,9 +79,7 @@ export default function FeatureProducts() {
                 <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
               </button>
 
-              <Link
-                to={`/ProductDetails/${product._id} /${product.category.name}`}
-              >
+              <Link to={`/ProductDetails/${product._id}/${product.category?.name}`}>
                 <img
                   src={product.imageCover}
                   alt={product.title}
@@ -62,7 +87,7 @@ export default function FeatureProducts() {
                 />
                 <p className="text-xs font-medium text-indigo-500 mb-1">{product.category?.name}</p>
                 <h2 className="text-base font-semibold text-slate-800 mb-1 min-h-12">
-                  {product.title.substring(0, 42)}
+                  {product.title.substring(0, 40)}
                 </h2>
                 <p className="text-slate-500 text-sm mb-4 min-h-10">
                   {product.description.substring(0, 45)}...

@@ -9,8 +9,22 @@ import {useContext} from "react";
 export default function ProductDetails() {
   const { id, categoryName } = useParams();
   let { addToCart } = useContext(CartContext);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
+
   async function addProductToCart(productId) {
     await addToCart(productId);
+  }
+
+  function toggleWishlist(productId) {
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
   }
 
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -96,9 +110,18 @@ export default function ProductDetails() {
             <p className="text-xl font-semibold mb-4">
               {ProductDetails.price} EGP
             </p>
-            <button onClick={() => addProductToCart(ProductDetails._id)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer">
-              Add to Cart
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => addProductToCart(ProductDetails._id)} className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black cursor-pointer transition-colors">
+                Add to Cart
+              </button>
+              <button
+                onClick={() => toggleWishlist(ProductDetails._id)}
+                className="border border-slate-300 text-slate-700 px-4 py-2 rounded hover:bg-slate-100 cursor-pointer"
+              >
+                <i className={`${wishlistIds.has(ProductDetails._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart mr-2`}></i>
+                Add to Wishlist
+              </button>
+            </div>
           </div>
         </div>
 
@@ -109,6 +132,14 @@ export default function ProductDetails() {
               className="border p-4 rounded-lg shadow-lg relative w-full max-w-sm mx-auto sm:mx-0"
               
             >
+              <button
+                onClick={() => toggleWishlist(product._id)}
+                className="absolute top-6 right-6 z-10 h-8 w-8 rounded-full bg-white/95 border border-slate-200 shadow-sm text-slate-600 hover:text-rose-500 cursor-pointer"
+                aria-label="Toggle wishlist"
+              >
+                <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
+              </button>
+
               <Link
                 to={`/ProductDetails/${product._id} /${product.category.name}`}
               >
@@ -132,7 +163,7 @@ export default function ProductDetails() {
                 <i className="fa fa-star text-amber-300 mb-6"></i>
                 {product.ratingsAverage}
               </div>
-              <button onClick={() => addProductToCart(product._id)} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 absolute bottom-4">
+              <button onClick={() => addProductToCart(product._id)} className="mt-4 bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black absolute bottom-4 cursor-pointer transition-colors">
                 Add to Cart
               </button>
             </div>
