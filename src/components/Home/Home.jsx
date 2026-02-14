@@ -39,15 +39,8 @@ export default function Home() {
       return "fa-solid fa-book-open";
     }
 
-    if (normalized.includes("baby") || normalized.includes("toy") || normalized.includes("toys")) {
-      return "fa-solid fa-baby";
-    }
 
-    if (normalized.includes("music") || normalized.includes("audio")) {
-      return "fa-solid fa-music";
-    }
-
-    return "fa-solid fa-music";
+    
   }
 
   function getCategories() {
@@ -59,13 +52,29 @@ export default function Home() {
     queryFn: getCategories,
   });
 
-  const categories = categoriesData?.data?.data?.slice(0, 8) || [];
+  const categories =
+    categoriesData?.data?.data
+      ?.filter((category) => {
+        const normalized = category.name?.toLowerCase() || "";
+        return (
+          !normalized.includes("music") &&
+          !normalized.includes("baby") &&
+          !normalized.includes("super") &&
+          !normalized.includes("market") &&
+          !normalized.includes("home") &&
+          !normalized.includes("book") &&
+          !normalized.includes("beaut") &&
+          !normalized.includes("health") &&
+          !normalized.includes("mobile")
+        );
+      })
+      .slice(0, 8) || [];
 
   return (
     <div className="space-y-8 sm:space-y-10">
       <section className="pt-1 space-y-4">
         <nav className="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm">
-          <ul className="flex items-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap pb-1">
+          <ul className="flex items-center justify-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap pb-1">
             {categories.map((cat) => (
               <li key={cat._id}>
                 <Link

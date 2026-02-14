@@ -2,15 +2,20 @@ import React, { useState } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CartContext } from "../Context/contexts";
 import { useContext } from "react";
 
 export default function FeatureProducts() {
   let { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   async function addProductToCart(productId) {
+    if (!localStorage.getItem("userToken")) {
+      navigate("/register");
+      return;
+    }
     await addToCart(productId);
   }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Slick from "react-slick";
 import Loader from "../Loader/Loader";
@@ -8,10 +8,15 @@ import { CartContext } from "../Context/contexts";
 import {useContext} from "react";
 export default function ProductDetails() {
   const { id, categoryName } = useParams();
+  const navigate = useNavigate();
   let { addToCart } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   async function addProductToCart(productId) {
+    if (!localStorage.getItem("userToken")) {
+      navigate("/register");
+      return;
+    }
     await addToCart(productId);
   }
 
