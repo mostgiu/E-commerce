@@ -24,7 +24,7 @@ export default function Wishlist() {
   async function handleAddToCart(productId) {
     const userToken = localStorage.getItem("userToken");
     if (!userToken) {
-      navigate("/register");
+      navigate("/login");
       return;
     }
     await addToCart(productId);

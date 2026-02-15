@@ -15,7 +15,7 @@ export default function CategoryProducts() {
 
   async function addProductToCart(productId) {
     if (!localStorage.getItem("userToken")) {
-      navigate("/register");
+      navigate("/login");
       return;
     }
     await addToCart(productId);
