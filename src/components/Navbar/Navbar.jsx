@@ -6,7 +6,7 @@ import { useContext } from "react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  let { noOfCartItems, getToCart, getWishlist, wishlistCount } = useContext(CartContext);
+  let { noOfCartItems, getToCart, getWishlist, wishlistCount, clearCartState } = useContext(CartContext);
   let { token, setToken } = useContext(TokenContext);
 
   const linkClasses = ({ isActive }) =>
@@ -27,6 +27,7 @@ export default function Navbar() {
   function logout() {
     localStorage.removeItem("userToken");
     setToken(null);
+    clearCartState();
     setIsMenuOpen(false);
     navigate("/Login");
   }
@@ -35,8 +36,10 @@ export default function Navbar() {
     if (token) {
       getToCart();
       getWishlist();
+    } else {
+      clearCartState();
     }
-  }, [token]);
+  }, [token, getToCart, getWishlist, clearCartState]);
 
   return (
     <nav className="bg-white fixed top-0 left-0 right-0 z-50 backdrop-blur-sm p-5">
@@ -203,8 +206,6 @@ export default function Navbar() {
                   >
                     Home
                   </NavLink>
-                </li>
-                <li>
                 </li>
                 <li>
                   <NavLink

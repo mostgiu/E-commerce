@@ -8,6 +8,13 @@ export default function CartContextProvider(props) {
   const [totalCartAmount, setTotalcartAmount] = useState(0);
   const [cartId, setCartId] = useState(null); // Store cart ID for checkout
   const [wishlistCount, setWishlistCount] = useState(0);
+
+  function clearCartState() {
+    setNoOfCartItems(0);
+    setTotalcartAmount(0);
+    setCartId(null);
+    setWishlistCount(0);
+  }
   
   // Function to get fresh headers with current token
   const getHeaders = () => ({
@@ -17,7 +24,7 @@ export default function CartContextProvider(props) {
   async function getToCart() {
     const headers = getHeaders();
     if (!headers.token) {
-      console.error("❌ Error: No authentication token. User not logged in.");
+      clearCartState();
       return { 
         status: 401, 
         data: { error: "Please login first" } 
@@ -35,6 +42,9 @@ export default function CartContextProvider(props) {
         return response;
       })
       .catch((error) => {
+        if (error?.response?.status === 401) {
+          clearCartState();
+        }
         console.error("❌ Cart API Error:", error.response?.status, error.response?.data);
         return error;
       });
@@ -191,7 +201,7 @@ export default function CartContextProvider(props) {
   async function getWishlist() {
     const headers = getHeaders();
     if (!headers.token) {
-      setWishlistCount(0);
+      clearCartState();
       return { status: 401, data: { error: "Please login first" } };
     }
 
@@ -204,6 +214,9 @@ export default function CartContextProvider(props) {
         return response;
       })
       .catch((error) => {
+        if (error?.response?.status === 401) {
+          clearCartState();
+        }
         console.error("❌ Get Wishlist Error:", error.response?.status, error.response?.data);
         return error;
       });
@@ -248,7 +261,8 @@ export default function CartContextProvider(props) {
         addToWishlist,
         removeFromWishlist,
         getWishlist,
-        wishlistCount
+        wishlistCount,
+        clearCartState
       }}
     >
       {props.children}
