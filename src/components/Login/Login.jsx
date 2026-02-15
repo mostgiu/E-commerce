@@ -56,7 +56,6 @@ export default function Login() {
   return (
     <div className="h-[calc(100vh-11rem)] overflow-hidden bg-slate-700 flex flex-col justify-center px-4 py-4 lg:px-6 rounded-xl">
       <div className="sm:mx-auto sm:w-full sm:max-w-xs">
-        <img src={Logo} alt="Bazarlo" className="mx-auto h-16 w-auto" />
         <h2 className="mt-4 text-center text-xl leading-8 font-bold tracking-tight text-white">
           Sign in to your account
         </h2>
