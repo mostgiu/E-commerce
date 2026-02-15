@@ -4,7 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import flowbiteReact from "flowbite-react/plugin/vite";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  base: mode === 'development' ? '/' : '/E-commerce/',
-  plugins: [react(), tailwindcss(), flowbiteReact()],
-}))
+export default defineConfig(({ mode }) => {
+  const isDevelopment = mode === 'development';
+  const isVercel = process.env.VERCEL === '1';
+
+  return {
+    base: isDevelopment || isVercel ? '/' : '/E-commerce/',
+    plugins: [react(), tailwindcss(), flowbiteReact()],
+  };
+})
