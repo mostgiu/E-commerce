@@ -29,6 +29,7 @@ const Slider = Slick.default ?? Slick;
   const { data, isLoading } = useQuery({
     queryKey: ["categoriesSlider"],
     queryFn: getCatslider,
+    staleTime: 1000 * 60 * 5,
   });
 
   if (isLoading) return null;
@@ -37,18 +38,20 @@ const Slider = Slick.default ?? Slick;
     <div className="px-0 mb-1">
       <Slider {...settings}>
         {data.data.data.map((cat) => (
-          <div key={cat._id} className="px-1.5 sm:px-2.5">
+          <div key={cat._id} className="px-1.5 sm:px-2.5 h-49">
             <Link
               to={`/categories/${cat._id}`}
               state={{ categoryName: cat.name }}
-              className="block h-full bg-slate-50 border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              className="flex h-full flex-col bg-slate-50 border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
             >
               <img
                 src={cat.image}
                 alt={cat.name}
-                className="w-full h-36 object-cover object-center"
+                className="w-full h-36 shrink-0 object-cover object-center"
               />
-              <p className="text-center text-sm font-medium text-slate-700 py-2 truncate px-2">{cat.name}</p>
+              <p className="h-14 px-2 flex items-center justify-center text-center text-sm font-medium text-slate-700 leading-tight line-clamp-2">
+                {cat.name}
+              </p>
             </Link>
           </div>
         ))}

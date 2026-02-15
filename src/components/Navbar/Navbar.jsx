@@ -6,7 +6,7 @@ import { useContext } from "react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  let { noOfCartItems, getToCart } = useContext(CartContext);
+  let { noOfCartItems, getToCart, getWishlist, wishlistCount } = useContext(CartContext);
   let { token, setToken } = useContext(TokenContext);
 
   const linkClasses = ({ isActive }) =>
@@ -32,10 +32,11 @@ export default function Navbar() {
   }
 
   useEffect(() => {
-    if (localStorage.getItem("userToken")) {
+    if (token) {
       getToCart();
+      getWishlist();
     }
-  }, []);
+  }, [token]);
 
   return (
     <nav className="bg-white fixed top-0 left-0 right-0 z-50 backdrop-blur-sm p-5">
@@ -73,15 +74,24 @@ export default function Navbar() {
               >
                 <span className=" px-3">
                   Cart{" "}
-                  {noOfCartItems === 0 ? (
-                    <div className="hidden">0</div>
-                  ) : (
+                  {noOfCartItems > 0 ? (
                     <div className="text-black bg-white text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">{noOfCartItems}</div>
+                  ) : (
+                    <div className="hidden">0</div>
                   )}
                 </span>
               </NavLink>
-              <NavLink to="/Wishlist" className={linkClasses}>
-                Wishlist
+              <NavLink to="/Wishlist" className={({ isActive }) => `pb-1 border-b-2 transition-all relative ${
+                    isActive
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:text-black hover:border-black"
+                  }`}>
+                <span className="px-3">
+                  Wishlist
+                  {wishlistCount > 0 ? (
+                    <div className="text-black bg-white text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">{wishlistCount}</div>
+                  ) : null}
+                </span>
               </NavLink>
               <NavLink to="/Categories" className={linkClasses}>
                 Categories
@@ -98,7 +108,7 @@ export default function Navbar() {
           {token ? (
             <button
               onClick={logout}
-              className="hover:text-sky-200 transition-colors flex items-center gap-2"
+              className="hover:text-black/70 transition-colors flex items-center gap-2"
             >
               <i className="fa-solid fa-right-from-bracket"></i>
               Logout
@@ -136,7 +146,7 @@ export default function Navbar() {
                 />
               </svg>
               <span className="absolute top-0 right-0 bg-blue-500 text-xs font-medium px-1 rounded-full min-w-4.5 text-center">
-                {noOfCartItems}
+                {noOfCartItems > 0 ? noOfCartItems : ""}
               </span>
             </Link>
           )}
@@ -195,7 +205,6 @@ export default function Navbar() {
                   </NavLink>
                 </li>
                 <li>
-                 
                 </li>
                 <li>
                   <NavLink
@@ -221,7 +230,7 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                     className={mobileLinkClasses}
                   >
-                    Wishlist
+                    Wishlist ({wishlistCount || 0})
                   </NavLink>
                 </li>
                 <li>
@@ -248,7 +257,7 @@ export default function Navbar() {
               {token ? (
                 <button
                   onClick={logout}
-                  className="block py-2 hover:text-sky-200 w-full text-left"
+                  className="block py-2 hover:text-black/70 w-full text-left"
                 >
                   <span className="inline-flex items-center gap-2">
                     <i className="fa-solid fa-right-from-bracket"></i>

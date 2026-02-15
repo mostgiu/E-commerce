@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -7,8 +7,6 @@ import MainSlider from "../MainSlider/MainSlider";
 import CategorySlider from "../CategorySlider/CategorySlider";
 
 export default function Home() {
-  useEffect(() => {}, []);
-
   function getCategoryIcon(name = "") {
     const normalized = name.toLowerCase();
 
@@ -39,8 +37,7 @@ export default function Home() {
       return "fa-solid fa-book-open";
     }
 
-
-    
+    return "fa-solid fa-tags";
   }
 
   function getCategories() {
@@ -50,6 +47,7 @@ export default function Home() {
   const { data: categoriesData } = useQuery({
     queryKey: ["homeCategoriesList"],
     queryFn: getCategories,
+    staleTime: 1000 * 60 * 5,
   });
 
   const categories =
