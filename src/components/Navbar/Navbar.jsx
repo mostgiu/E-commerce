@@ -80,6 +80,9 @@ export default function Navbar() {
                   )}
                 </span>
               </NavLink>
+              <NavLink to="/Wishlist" className={linkClasses}>
+                Wishlist
+              </NavLink>
               <NavLink to="/Categories" className={linkClasses}>
                 Categories
               </NavLink>
@@ -210,6 +213,15 @@ export default function Navbar() {
                     className={mobileLinkClasses}
                   >
                     Cart ({noOfCartItems})
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/Wishlist"
+                    onClick={() => setIsMenuOpen(false)}
+                    className={mobileLinkClasses}
+                  >
+                    Wishlist
                   </NavLink>
                 </li>
                 <li>

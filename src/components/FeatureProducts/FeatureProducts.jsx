@@ -7,7 +7,7 @@ import { CartContext } from "../Context/contexts";
 import { useContext } from "react";
 
 export default function FeatureProducts() {
-  let { addToCart } = useContext(CartContext);
+  let { addToCart, addToWishlist } = useContext(CartContext);
   const navigate = useNavigate();
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
@@ -19,7 +19,17 @@ export default function FeatureProducts() {
     await addToCart(productId);
   }
 
-  function toggleWishlist(productId) {
+  async function toggleWishlist(productId) {
+    if (!localStorage.getItem("userToken")) {
+      navigate("/register");
+      return;
+    }
+
+    const response = await addToWishlist(productId);
+    if (response?.status < 200 || response?.status >= 300) {
+      return;
+    }
+
     setWishlistIds((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) {

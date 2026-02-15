@@ -105,7 +105,7 @@ export default function Home() {
 
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Featured Products</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Featured Products • Updated</h2>
           <span className="text-sm text-slate-500">Curated picks for you</span>
         </div>
       <FeatureProducts />

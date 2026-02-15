@@ -10,7 +10,7 @@ export default function CategoryProducts() {
   const location = useLocation();
   const navigate = useNavigate();
   const categoryName = location.state?.categoryName || "Category";
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, addToWishlist } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   async function addProductToCart(productId) {
@@ -21,7 +21,17 @@ export default function CategoryProducts() {
     await addToCart(productId);
   }
 
-  function toggleWishlist(productId) {
+  async function toggleWishlist(productId) {
+    if (!localStorage.getItem("userToken")) {
+      navigate("/register");
+      return;
+    }
+
+    const response = await addToWishlist(productId);
+    if (response?.status < 200 || response?.status >= 300) {
+      return;
+    }
+
     setWishlistIds((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) {

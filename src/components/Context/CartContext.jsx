@@ -164,6 +164,28 @@ export default function CartContextProvider(props) {
       });
   }
 
+  async function addToWishlist(productId) {
+    const headers = getHeaders();
+    if (!headers.token) {
+      return { status: 401, data: { error: "Please login first" } };
+    }
+
+    return await axios
+      .post(
+        "https://ecommerce.routemisr.com/api/v1/wishlist",
+        { productId },
+        { headers: headers },
+      )
+      .then((response) => {
+        toast.success(response.data.message || "Added to wishlist", { duration: 1000 });
+        return response;
+      })
+      .catch((error) => {
+        console.error("❌ Add To Wishlist Error:", error.response?.status, error.response?.data);
+        return error;
+      });
+  }
+
 
 
   return (
@@ -178,7 +200,8 @@ export default function CartContextProvider(props) {
         totalCartAmount,
         cartId,
         onlinePayment,
-        cashPayment
+        cashPayment,
+        addToWishlist
       }}
     >
       {props.children}

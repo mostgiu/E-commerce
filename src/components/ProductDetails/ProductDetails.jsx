@@ -9,7 +9,7 @@ import {useContext} from "react";
 export default function ProductDetails() {
   const { id, categoryName } = useParams();
   const navigate = useNavigate();
-  let { addToCart } = useContext(CartContext);
+  let { addToCart, addToWishlist } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   async function addProductToCart(productId) {
@@ -20,7 +20,17 @@ export default function ProductDetails() {
     await addToCart(productId);
   }
 
-  function toggleWishlist(productId) {
+  async function toggleWishlist(productId) {
+    if (!localStorage.getItem("userToken")) {
+      navigate("/register");
+      return;
+    }
+
+    const response = await addToWishlist(productId);
+    if (response?.status < 200 || response?.status >= 300) {
+      return;
+    }
+
     setWishlistIds((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) {

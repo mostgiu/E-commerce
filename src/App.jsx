@@ -18,6 +18,7 @@ import ProductDetails from "./components/ProductDetails/ProductDetails";
 import BrandDetails from "./components/brandDetails/brandDetails";
 import AllOrders from "./components/AllOrders/AllOrders";
 import CheckOut from "./components/CheckOut/CheckOut";
+import Wishlist from "./components/Wishlist/Wishlist";
 import "./App.css";
 import { Toaster } from "react-hot-toast";
 
@@ -63,6 +64,14 @@ function App() {
           element: (
             <ProtectedRoutes>
               <Cart />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "wishlist",
+          element: (
+            <ProtectedRoutes>
+              <Wishlist />
             </ProtectedRoutes>
           ),
         },
