@@ -7,6 +7,7 @@ export default function CartContextProvider(props) {
   const [noOfCartItems, setNoOfCartItems] = useState(null);
   const [totalCartAmount, setTotalcartAmount] = useState(0);
   const [cartId, setCartId] = useState(null); // Store cart ID for checkout
+  const [wishlistCount, setWishlistCount] = useState(0);
   
   // Function to get fresh headers with current token
   const getHeaders = () => ({
@@ -178,10 +179,53 @@ export default function CartContextProvider(props) {
       )
       .then((response) => {
         toast.success(response.data.message || "Added to wishlist", { duration: 1000 });
+        setWishlistCount(response.data?.data?.length || 0);
         return response;
       })
       .catch((error) => {
         console.error("❌ Add To Wishlist Error:", error.response?.status, error.response?.data);
+        return error;
+      });
+  }
+
+  async function getWishlist() {
+    const headers = getHeaders();
+    if (!headers.token) {
+      setWishlistCount(0);
+      return { status: 401, data: { error: "Please login first" } };
+    }
+
+    return await axios
+      .get("https://ecommerce.routemisr.com/api/v1/wishlist", {
+        headers: headers,
+      })
+      .then((response) => {
+        setWishlistCount(response.data?.count || response.data?.data?.length || 0);
+        return response;
+      })
+      .catch((error) => {
+        console.error("❌ Get Wishlist Error:", error.response?.status, error.response?.data);
+        return error;
+      });
+  }
+
+  async function removeFromWishlist(productId) {
+    const headers = getHeaders();
+    if (!headers.token) {
+      return { status: 401, data: { error: "Please login first" } };
+    }
+
+    return await axios
+      .delete(`https://ecommerce.routemisr.com/api/v1/wishlist/${productId}`, {
+        headers: headers,
+      })
+      .then((response) => {
+        toast.success(response.data.message || "Removed from wishlist", { duration: 1000 });
+        setWishlistCount(response.data?.data?.length || 0);
+        return response;
+      })
+      .catch((error) => {
+        console.error("❌ Remove From Wishlist Error:", error.response?.status, error.response?.data);
         return error;
       });
   }
@@ -201,7 +245,10 @@ export default function CartContextProvider(props) {
         cartId,
         onlinePayment,
         cashPayment,
-        addToWishlist
+        addToWishlist,
+        removeFromWishlist,
+        getWishlist,
+        wishlistCount
       }}
     >
       {props.children}
