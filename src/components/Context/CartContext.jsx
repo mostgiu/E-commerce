@@ -21,6 +21,23 @@ export default function CartContextProvider(props) {
     token: localStorage.getItem("userToken"),
   });
 
+  function handleApiError(error, fallbackMessage, shouldClearOn401 = false) {
+    const status = error?.response?.status;
+    const apiMessage = error?.response?.data?.message;
+
+    if (shouldClearOn401 && status === 401) {
+      clearCartState();
+    }
+
+    if (status === 500) {
+      toast.error("Service is temporarily unavailable. Please try again.", { duration: 1800 });
+    } else if (status && status !== 401) {
+      toast.error(apiMessage || fallbackMessage, { duration: 1500 });
+    }
+
+    return error?.response || error;
+  }
+
   async function getToCart() {
     const headers = getHeaders();
     if (!headers.token) {
@@ -42,11 +59,8 @@ export default function CartContextProvider(props) {
         return response;
       })
       .catch((error) => {
-        if (error?.response?.status === 401) {
-          clearCartState();
-        }
         console.error("❌ Cart API Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to load cart", true);
       });
   }
   async function addToCart(productId) {
@@ -67,7 +81,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Add To Cart Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to add product to cart");
       });
   }
 
@@ -88,7 +102,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Remove Cart Item Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to remove cart item");
       });
   }
 
@@ -115,7 +129,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Update Product Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to update cart item");
       });
   }
 
@@ -134,7 +148,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Clear Cart Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to clear cart");
       });
   }
 
@@ -154,7 +168,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Online Payment Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Online payment failed");
       });
   }
 
@@ -171,7 +185,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Cash Payment Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Cash payment failed");
       });
   }
 
@@ -194,7 +208,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Add To Wishlist Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to add item to wishlist");
       });
   }
 
@@ -214,11 +228,8 @@ export default function CartContextProvider(props) {
         return response;
       })
       .catch((error) => {
-        if (error?.response?.status === 401) {
-          clearCartState();
-        }
         console.error("❌ Get Wishlist Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to load wishlist", true);
       });
   }
 
@@ -239,7 +250,7 @@ export default function CartContextProvider(props) {
       })
       .catch((error) => {
         console.error("❌ Remove From Wishlist Error:", error.response?.status, error.response?.data);
-        return error;
+        return handleApiError(error, "Failed to remove item from wishlist");
       });
   }
 
