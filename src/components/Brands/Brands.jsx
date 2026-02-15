@@ -9,12 +9,9 @@ import { Link } from "react-router-dom";
 export default function Brands() {
   let { brands } = useSelector((state) => state.productRed);
   let dispatch = useDispatch();
-  async function getData(){
-    dispatch(getBrands())
-  }
-  useEffect(() => { 
-    getData();
-  }, []);
+  useEffect(() => {
+    dispatch(getBrands());
+  }, [dispatch]);
   return <>
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 py-4 w-full max-w-7xl">
           {brands.map((brand) => (

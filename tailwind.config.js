@@ -1,5 +1,3 @@
-
-/* eslint-env node */
 import flowbite from "flowbite-react/tailwind";
 export default {
   content: [

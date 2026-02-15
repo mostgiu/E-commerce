@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Slick from "react-slick";
@@ -46,7 +46,7 @@ export default function ProductDetails() {
   const [ProductDetails, setProductDetails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
-  async function fetchProductDetails() {
+  const fetchProductDetails = useCallback(async () => {
     return await axios
       .get(`https://ecommerce.routemisr.com/api/v1/products/${id}`)
       .then((res) => {
@@ -58,9 +58,9 @@ export default function ProductDetails() {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, [id]);
 
-  async function fetchRelated() {
+  const fetchRelated = useCallback(async () => {
     return await axios
       .get(`https://ecommerce.routemisr.com/api/v1/products`)
       .then((res) => {
@@ -76,12 +76,12 @@ export default function ProductDetails() {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, [categoryName]);
 
   useEffect(() => {
     fetchProductDetails();
     fetchRelated();
-  }, [id]);
+  }, [fetchProductDetails, fetchRelated]);
 
   const settings = {
     dots: true,
@@ -156,7 +156,7 @@ export default function ProductDetails() {
               </button>
 
               <Link
-                to={`/ProductDetails/${product._id} /${product.category.name}`}
+                to={`/ProductDetails/${product._id}/${product.category.name}`}
               >
                 <img
                   src={product.imageCover}

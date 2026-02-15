@@ -9,7 +9,7 @@
  * - Proceed to checkout
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dropdown, DropdownItem, DropdownDivider } from "flowbite-react";
@@ -39,7 +39,7 @@ export default function Cart() {
   /**
    * Fetch all cart items from the API
    */
-  async function getAllCart() {
+  const getAllCart = useCallback(async () => {
     let response = await getToCart();
     if (response?.status === 500 || response?.response?.status === 500) {
       setError("Server error: The API is temporarily unavailable. Please try again in a few moments.");
@@ -52,7 +52,7 @@ export default function Cart() {
       setError("Failed to load cart. Please try again.");
       setIsLoading(false);
     }
-  }
+  }, [getToCart]);
 
   /**
    * Remove a specific product from the cart
@@ -91,7 +91,7 @@ export default function Cart() {
       getAllCart();
     }, 0);
     return () => clearTimeout(t);
-  }, []);
+  }, [getAllCart]);
 
   // ============ RENDER ============
   return (
