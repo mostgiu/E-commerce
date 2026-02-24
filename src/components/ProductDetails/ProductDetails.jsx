@@ -83,6 +83,10 @@ export default function ProductDetails() {
     fetchRelated();
   }, [fetchProductDetails, fetchRelated]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [id]);
+
   const settings = {
     dots: true,
     infinite: true,
@@ -116,16 +120,16 @@ export default function ProductDetails() {
             </Slider>
           </div>
 
-          <div className="w-full lg:flex-1">
+          <div className="w-full lg:flex-1 flex flex-col justify-center p-4 sm:p-6">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4">{ProductDetails.title}</h1>
-            <p className="mb-4">{ProductDetails.description}</p>
+            <p className="mb-4 text-center">{ProductDetails.description}</p>
             <p className="text-sm text-gray-500 mb-2">
               Category: {ProductDetails.category?.name}
             </p>
-            <p className="text-xl font-semibold mb-4">
+            <p className="text-xl font-semibold mb-4 text-center">
               {ProductDetails.price} EGP
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3">
               <button onClick={() => addProductToCart(ProductDetails._id)} className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black cursor-pointer transition-colors">
                 Add to Cart
               </button>
