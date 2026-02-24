@@ -105,22 +105,22 @@ export default function ProductDetails() {
       <div className="container mx-auto p-3 sm:p-4 ">
       {isLoading ? <Loader /> : null}
         
-        <div className="flex  border rounded-lg shadow-lg  sm:p-6">
-          <div className="w-1/2 lg:w-2/5 xl:w-1/4">
+        <div className="flex flex-col md:flex-row border rounded-lg shadow-lg sm:p-6 overflow-x-hidden">
+          <div className="w-full md:w-1/2 lg:w-2/5 xl:w-1/4">
             <Slider {...settings}>
               {ProductDetails.images?.map((image, index) => (
                 <div key={index}>
                   <img
                     src={image}
                     alt={`Product Image ${index + 1}`}
-                    className="h-48 sm:h-64 object-cover rounded"
+                    className="w-full h-48 sm:h-64 object-cover rounded"
                   />
                 </div>
               ))}
             </Slider>
           </div>
 
-          <div className="w-full lg:flex-1 flex flex-col justify-center p-4 sm:p-6">
+          <div className="w-full md:flex-1 min-w-0 flex flex-col justify-center p-4 sm:p-6">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4">{ProductDetails.title}</h1>
             <p className="mb-4 text-center">{ProductDetails.description}</p>
             <p className="text-sm text-gray-500 mb-2">
@@ -129,7 +129,7 @@ export default function ProductDetails() {
             <p className="text-xl font-semibold mb-4 text-center">
               {ProductDetails.price} EGP
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button onClick={() => addProductToCart(ProductDetails._id)} className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black cursor-pointer transition-colors">
                 Add to Cart
               </button>
