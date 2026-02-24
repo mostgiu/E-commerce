@@ -148,7 +148,7 @@ export default function Navbar() {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <span className="absolute top-0 right-0 bg-blue-500 text-xs font-medium px-1 rounded-full min-w-4.5 text-center">
+              <span className="text-black text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">
                 {noOfCartItems > 0 ? noOfCartItems : ""}
               </span>
             </Link>
@@ -222,7 +222,14 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                     className={mobileLinkClasses}
                   >
-                    Cart ({noOfCartItems})
+                    <span className="inline-flex items-center gap-2">
+                      Cart
+                      {noOfCartItems > 0 ? (
+                        <span className="text-black text-xs font-medium px-1.5 py-0.5 rounded-full text-center">
+                          {noOfCartItems}
+                        </span>
+                      ) : null}
+                    </span>
                   </NavLink>
                 </li>
                 <li>
@@ -231,7 +238,14 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                     className={mobileLinkClasses}
                   >
-                    Wishlist ({wishlistCount || 0})
+                    <span className="inline-flex items-center gap-2">
+                      Wishlist
+                      {wishlistCount > 0 ? (
+                        <span className="text-black text-xs font-medium px-1.5 py-0.5 rounded-full text-center">
+                          {wishlistCount}
+                        </span>
+                      ) : null}
+                    </span>
                   </NavLink>
                 </li>
                 <li>

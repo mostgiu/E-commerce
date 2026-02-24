@@ -173,7 +173,7 @@ export default function ProductDetails() {
               <h2 className="text-lg font-semibold mb-6">
                 {product.title.substring(0, 10)}
               </h2>
-              <p className="text-blue-600 font-bold">${product.price}</p>
+              <p className="text-blue-600 font-bold">{product.price} EGP</p>
               <div className="flex justify-between">
                 <i className="fa fa-star text-amber-300 mb-6"></i>
                 {product.ratingsAverage}

@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import FeatureProducts from "../FeatureProducts/FeatureProducts";
 import MainSlider from "../MainSlider/MainSlider";
-import CategorySlider from "../CategorySlider/CategorySlider";
 
 export default function Home() {
   function getCategoryIcon(name = "") {
@@ -88,17 +87,14 @@ export default function Home() {
           </ul>
         </nav>
 
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Featured Offers</h2>
+          <span className="text-sm text-slate-500">Latest promos</span>
+        </div>
+
         <div className="h-full">
           <MainSlider />
         </div>
-      </section>
-
-      <section className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Shop by Category</h2>
-          <span className="text-sm text-slate-500">Top collections</span>
-        </div>
-        <CategorySlider />
       </section>
 
       <section>

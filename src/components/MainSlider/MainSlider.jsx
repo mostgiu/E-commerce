@@ -36,7 +36,7 @@ export default function MainSlider() {
         {slides.map((slide, index) => (
           <div key={index} className="px-0">
             <div className="relative">
-              <img src={slide} alt={`slider-${index + 1}`} className="w-full h-44 sm:h-60 md:h-72 lg:h-96 object-cover" />
+              <img src={slide} alt={`slider-${index + 1}`} className="w-full h-52 sm:h-64 md:h-80 lg:h-96 object-cover" />
               <div className="absolute inset-0 bg-linear-to-r from-black/55 via-black/20 to-transparent"></div>
               <div className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 text-white max-w-xs sm:max-w-md">
                 <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-slate-200 mb-2">New Season</p>

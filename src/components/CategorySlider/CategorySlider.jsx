@@ -8,15 +8,17 @@ export default function CategorySlider() {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: 7,
+    slidesToShow: 1,
     slidesToScroll: 1,
+    swipeToSlide: false,
     autoplay: true,
     autoplaySpeed: 1500,
     responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 5 } },
-      { breakpoint: 1024, settings: { slidesToShow: 4 } },
-      { breakpoint: 640, settings: { slidesToShow: 3 } },
-      { breakpoint: 480, settings: { slidesToShow: 2 } },
+      { breakpoint: 1280, settings: { slidesToShow: 1 } },
+      { breakpoint: 1024, settings: { slidesToShow: 1 } },
+      { breakpoint: 768, settings: { slidesToShow: 1 } },
+      { breakpoint: 640, settings: { slidesToShow: 1 } },
+      { breakpoint: 480, settings: { slidesToShow: 1 } },
     ]
   };
 const Slider = Slick.default ?? Slick;
@@ -38,7 +40,7 @@ const Slider = Slick.default ?? Slick;
     <div className="px-0 mb-1">
       <Slider {...settings}>
         {data.data.data.map((cat) => (
-          <div key={cat._id} className="px-1.5 sm:px-2.5 h-49">
+          <div key={cat._id} className="px-1 sm:px-2.5 h-46 sm:h-50">
             <Link
               to={`/categories/${cat._id}`}
               state={{ categoryName: cat.name }}
@@ -47,9 +49,9 @@ const Slider = Slick.default ?? Slick;
               <img
                 src={cat.image}
                 alt={cat.name}
-                className="w-full h-36 shrink-0 object-cover object-center"
+                className="w-full h-24 sm:h-36 shrink-0 object-cover object-center"
               />
-              <p className="h-14 px-2 flex items-center justify-center text-center text-sm font-medium text-slate-700 leading-tight line-clamp-2">
+              <p className="h-12 sm:h-14 px-2 flex items-center justify-center text-center text-xs sm:text-sm font-medium text-slate-700 leading-tight line-clamp-2">
                 {cat.name}
               </p>
             </Link>

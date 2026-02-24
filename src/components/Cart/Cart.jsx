@@ -120,12 +120,14 @@ export default function Cart() {
             {/* Header: Title and Clear Cart Button */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg sm:text-xl font-bold">Your Cart</h2>
-              <button
-                onClick={() => ClearAllCart()}
-                className="bg-red-700 text-white px-3 py-2 rounded-xl cursor-pointer hover:bg-red-800 transition-all duration-300 text-sm sm:text-base"
-              >
-                Clear Cart
-              </button>
+              {(cartItems ?? []).length > 0 ? (
+                <button
+                  onClick={() => ClearAllCart()}
+                  className="bg-red-700 text-white px-3 py-2 rounded-xl cursor-pointer hover:bg-red-800 transition-all duration-300 text-sm sm:text-base"
+                >
+                  Clear Cart
+                </button>
+              ) : null}
             </div>
 
             {/* ====== MOBILE VIEW ====== */}
@@ -323,28 +325,29 @@ export default function Cart() {
 
             {/* ====== CART FOOTER ====== */}
             {/* Display total amount and payment options dropdown */}
-            <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
-              <span className="text-lg font-bold text-slate-800">Total Amount</span>
-              <span className="text-xl font-bold text-slate-900">{totalCartAmount} EGP</span>
-              
-              {/* Payment Method Dropdown Menu */}
-              <Dropdown label="Payment Options" color="dark">
-                <DropdownItem
-                    onClick={() => {
-                      navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });
-                    }}
-                  >
-                  💵 Cash
-                </DropdownItem>
-                <DropdownItem
-                    onClick={() => {
-                      navigate("/checkout", { state: { paymentMethod: "credit card" } });
-                    }}
-                  >
-                  💳 Credit Card
-                </DropdownItem>
-              </Dropdown>
-            </div>
+            {(cartItems ?? []).length > 0 ? (
+              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
+                <span className="text-lg font-bold text-slate-800">Total Amount</span>
+                <span className="text-xl font-bold text-slate-900">{totalCartAmount} EGP</span>
+
+                <Dropdown label="Payment Options" color="dark">
+                  <DropdownItem
+                      onClick={() => {
+                        navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });
+                      }}
+                    >
+                    💵 Cash
+                  </DropdownItem>
+                  <DropdownItem
+                      onClick={() => {
+                        navigate("/checkout", { state: { paymentMethod: "credit card" } });
+                      }}
+                    >
+                    💳 Credit Card
+                  </DropdownItem>
+                </Dropdown>
+              </div>
+            ) : null}
           </div>
         )}
       </div>

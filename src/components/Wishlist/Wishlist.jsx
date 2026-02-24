@@ -75,7 +75,7 @@ export default function Wishlist() {
                 </h2>
               </Link>
               <div className="flex items-center justify-between">
-                <p className="text-indigo-600 font-bold text-lg">${item.price}</p>
+                <p className="text-indigo-600 font-bold text-lg">{item.price} EGP</p>
                 <button
                   onClick={() => handleRemoveFromWishlist(item._id)}
                   className="text-sm px-3 py-1.5 rounded border border-black bg-black text-white hover:bg-white hover:text-black transition-colors cursor-pointer"

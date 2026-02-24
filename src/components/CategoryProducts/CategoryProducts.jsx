@@ -110,7 +110,7 @@ export default function CategoryProducts() {
               </Link>
 
               <div className="flex items-center justify-between mb-14">
-                <p className="text-indigo-600 font-bold text-lg">${product.price}</p>
+                <p className="text-indigo-600 font-bold text-lg">{product.price} EGP</p>
                 <div className="flex items-center gap-1 text-amber-500 text-sm font-semibold">
                   <i className="fa fa-star"></i>
                   <span>{product.ratingsAverage}</span>
