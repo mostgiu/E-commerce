@@ -17,7 +17,7 @@ export default function Register() {
       .max(15, "Name must be at most 15 characters")
       .required("Name is required"),
     phone: Yup.string()
-      .matches(/^01[0125][0-9]{8}$/, "Invalid Egyptian phone number")
+      .matches(/^01[0125][0-9]{8}$/, "Phone number must start with 01 (e.g. 012...) and be 11 digits")
       .required("Phone number is required"),
 
     email: Yup.string()
@@ -111,12 +111,14 @@ setUserMessage(null);
                 id="phone"
                 type="tel"
                 name="phone"
+                placeholder="012xxxxxxxx"
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.phone}
                 className="block w-full rounded-md bg-white px-3 py-2 text-base text-slate-900 outline-1 -outline-offset-1 outline-slate-300 placeholder:text-slate-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm"
               />
             </div>
+            <p className="text-slate-500 text-xs mt-1">Phone must start with 01 (example: 012xxxxxxxx).</p>
             {formik.errors.phone && formik.touched.phone && (
               <p className="text-red-600 text-sm mt-1">{formik.errors.phone}</p>
             )}

@@ -85,11 +85,7 @@ function App() {
         },
         {
           path: "ProductDetails/:id/:categoryName",
-          element: (
-            <ProtectedRoutes>
-              <ProductDetails />
-            </ProtectedRoutes>
-          ),
+          element: <ProductDetails />,
         },
         { path: "categories", element: <Categories /> },
         { path: "categories/:id", element: <CategoryProducts /> },
