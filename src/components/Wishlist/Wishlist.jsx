@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../Loader/Loader";
 import { CartContext } from "../Context/contexts";
@@ -7,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Wishlist() {
   const { getWishlist, removeFromWishlist, addToCart } = useContext(CartContext);
   const navigate = useNavigate();
+  const [cartLoadingId, setCartLoadingId] = useState(null);
+  const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["wishlist"],
@@ -22,12 +25,18 @@ export default function Wishlist() {
   }
 
   async function handleAddToCart(productId) {
+    setCartLoadingId(productId);
     const userToken = localStorage.getItem("userToken");
     if (!userToken) {
       navigate("/login");
+      setCartLoadingId(null);
       return;
     }
-    await addToCart(productId);
+    try {
+      await Promise.all([addToCart(productId), minLoaderDelay()]);
+    } finally {
+      setCartLoadingId(null);
+    }
   }
 
   if (isLoading) {
@@ -85,9 +94,17 @@ export default function Wishlist() {
               </div>
               <button
                 onClick={() => handleAddToCart(item._id)}
-                className="mt-3 w-full rounded-lg border border-black bg-black px-3 py-2 text-sm font-medium text-white hover:bg-white hover:text-black transition-colors cursor-pointer"
+                disabled={cartLoadingId === item._id}
+                className="mt-3 w-full rounded-lg border border-black bg-black px-3 py-2 text-sm font-medium text-white hover:bg-white hover:text-black transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Add to cart
+                {cartLoadingId === item._id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Adding...
+                  </span>
+                ) : (
+                  "Add to cart"
+                )}
               </button>
               <div className="mt-2 text-xs text-slate-500 flex items-center justify-between">
                 <span>{item.brand?.name || ""}</span>

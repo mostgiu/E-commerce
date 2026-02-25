@@ -11,35 +11,50 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   let { addToCart, addToWishlist } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [cartLoadingId, setCartLoadingId] = useState(null);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+  const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async function addProductToCart(productId) {
+    setCartLoadingId(productId);
     if (!localStorage.getItem("userToken")) {
       navigate("/login");
+      setCartLoadingId(null);
       return;
     }
-    await addToCart(productId);
+    try {
+      await Promise.all([addToCart(productId), minLoaderDelay()]);
+    } finally {
+      setCartLoadingId(null);
+    }
   }
 
   async function toggleWishlist(productId) {
+    setWishlistLoadingId(productId);
     if (!localStorage.getItem("userToken")) {
       navigate("/register");
+      setWishlistLoadingId(null);
       return;
     }
 
-    const response = await addToWishlist(productId);
-    if (response?.status < 200 || response?.status >= 300) {
-      return;
-    }
-
-    setWishlistIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
+    try {
+      const [response] = await Promise.all([addToWishlist(productId), minLoaderDelay()]);
+      if (response?.status < 200 || response?.status >= 300) {
+        return;
       }
-      return next;
-    });
+
+      setWishlistIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(productId)) {
+          next.delete(productId);
+        } else {
+          next.add(productId);
+        }
+        return next;
+      });
+    } finally {
+      setWishlistLoadingId(null);
+    }
   }
 
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -105,40 +120,61 @@ export default function ProductDetails() {
       <div className="container mx-auto p-3 sm:p-4 ">
       {isLoading ? <Loader /> : null}
         
-        <div className="flex flex-col md:flex-row border rounded-lg shadow-lg sm:p-6 overflow-x-hidden">
-          <div className="w-full md:w-1/2 lg:w-2/5 xl:w-1/4">
+        <div className="grid grid-cols-1 md:grid-cols-2 border rounded-lg shadow-lg sm:p-6 lg:p-8 overflow-x-hidden lg:gap-8 xl:gap-10">
+          <div className="w-full">
             <Slider {...settings}>
               {ProductDetails.images?.map((image, index) => (
                 <div key={index}>
                   <img
                     src={image}
                     alt={`Product Image ${index + 1}`}
-                    className="w-full h-48 sm:h-64 object-cover rounded"
+                    className="w-full h-48 sm:h-64 lg:h-112 object-cover rounded"
                   />
                 </div>
               ))}
             </Slider>
           </div>
 
-          <div className="w-full md:flex-1 min-w-0 flex flex-col justify-center p-4 sm:p-6">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4">{ProductDetails.title}</h1>
-            <p className="mb-4 text-center">{ProductDetails.description}</p>
-            <p className="text-sm text-gray-500 mb-2">
+          <div className="w-full min-w-0 flex flex-col justify-center p-4 sm:p-6 lg:py-8">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 text-center lg:text-left">{ProductDetails.title}</h1>
+            <p className="mb-4 text-center lg:text-left">{ProductDetails.description}</p>
+            <p className="text-sm text-gray-500 mb-2 text-center lg:text-left">
               Category: {ProductDetails.category?.name}
             </p>
-            <p className="text-xl font-semibold mb-4 text-center">
+            <p className="text-xl font-semibold mb-4 text-center lg:text-left">
               {ProductDetails.price} EGP
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button onClick={() => addProductToCart(ProductDetails._id)} className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black cursor-pointer transition-colors">
-                Add to Cart
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+              <button
+                onClick={() => addProductToCart(ProductDetails._id)}
+                disabled={cartLoadingId === ProductDetails._id}
+                className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {cartLoadingId === ProductDetails._id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Adding...
+                  </span>
+                ) : (
+                  "Add to Cart"
+                )}
               </button>
               <button
                 onClick={() => toggleWishlist(ProductDetails._id)}
-                className="border border-slate-300 text-slate-700 px-4 py-2 rounded hover:bg-slate-100 cursor-pointer"
+                disabled={wishlistLoadingId === ProductDetails._id}
+                className="border border-slate-300 text-slate-700 px-4 py-2 rounded hover:bg-slate-100 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <i className={`${wishlistIds.has(ProductDetails._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart mr-2`}></i>
-                Add to Wishlist
+                {wishlistLoadingId === ProductDetails._id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Adding...
+                  </span>
+                ) : (
+                  <>
+                    <i className={`${wishlistIds.has(ProductDetails._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart mr-2`}></i>
+                    Add to Wishlist
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -153,10 +189,17 @@ export default function ProductDetails() {
             >
               <button
                 onClick={() => toggleWishlist(product._id)}
+                disabled={wishlistLoadingId === product._id}
                 className="absolute top-6 right-6 z-10 h-8 w-8 rounded-full bg-white/95 border border-slate-200 shadow-sm text-slate-600 hover:text-rose-500 cursor-pointer"
                 aria-label="Toggle wishlist"
               >
-                <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
+                {wishlistLoadingId === product._id ? (
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white">
+                    <i className="fa fa-spinner fa-spin text-xs"></i>
+                  </span>
+                ) : (
+                  <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
+                )}
               </button>
 
               <Link
@@ -182,8 +225,19 @@ export default function ProductDetails() {
                 <i className="fa fa-star text-amber-300 mb-6"></i>
                 {product.ratingsAverage}
               </div>
-              <button onClick={() => addProductToCart(product._id)} className="mt-4 bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black absolute bottom-4 cursor-pointer transition-colors">
-                Add to Cart
+              <button
+                onClick={() => addProductToCart(product._id)}
+                disabled={cartLoadingId === product._id}
+                className="mt-4 bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black absolute bottom-4 cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {cartLoadingId === product._id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Adding...
+                  </span>
+                ) : (
+                  "Add to Cart"
+                )}
               </button>
             </div>
           ))}

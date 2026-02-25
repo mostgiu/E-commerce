@@ -23,6 +23,8 @@ export default function Cart() {
   // selected payment method for debugging / route state (not used)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qtyLoadingId, setQtyLoadingId] = useState(null);
+  const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // ============ CONTEXT & HOOKS ============
   const {
@@ -69,8 +71,16 @@ export default function Cart() {
    * @param {number} count - The new quantity
    */
   async function updateCartProduct(productId, count) {
-    let response = await updateProduct(productId, count);
-    setCartItems(response?.data?.data?.products);
+    setQtyLoadingId(productId);
+    try {
+      let [response] = await Promise.all([
+        updateProduct(productId, count),
+        minLoaderDelay(),
+      ]);
+      setCartItems(response?.data?.data?.products);
+    } finally {
+      setQtyLoadingId(null);
+    }
   }
 
   /**
@@ -168,10 +178,15 @@ export default function Cart() {
                           onClick={() =>
                             updateCartProduct(item.product.id, item.count - 1)
                           }
+                          disabled={qtyLoadingId === item.product.id}
                           type="button"
-                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors"
+                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                          −
+                          {qtyLoadingId === item.product.id ? (
+                            <i className="fa fa-spinner fa-spin"></i>
+                          ) : (
+                            "−"
+                          )}
                         </button>
                         <span className="w-8 text-center font-medium">
                           {item.count}
@@ -180,10 +195,15 @@ export default function Cart() {
                           onClick={() =>
                             updateCartProduct(item.product.id, item.count + 1)
                           }
+                          disabled={qtyLoadingId === item.product.id}
                           type="button"
-                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors"
+                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                          +
+                          {qtyLoadingId === item.product.id ? (
+                            <i className="fa fa-spinner fa-spin"></i>
+                          ) : (
+                            "+"
+                          )}
                         </button>
                       </div>
 
@@ -274,10 +294,15 @@ export default function Cart() {
                                   item.count - 1,
                                 )
                               }
+                              disabled={qtyLoadingId === item.product.id}
                               type="button"
-                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors"
+                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                              −
+                              {qtyLoadingId === item.product.id ? (
+                                <i className="fa fa-spinner fa-spin"></i>
+                              ) : (
+                                "−"
+                              )}
                             </button>
                             <span className="w-6 text-center">
                               {item.count}
@@ -289,10 +314,15 @@ export default function Cart() {
                                   item.count + 1,
                                 )
                               }
+                              disabled={qtyLoadingId === item.product.id}
                               type="button"
-                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors"
+                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                              +
+                              {qtyLoadingId === item.product.id ? (
+                                <i className="fa fa-spinner fa-spin"></i>
+                              ) : (
+                                "+"
+                              )}
                             </button>
                           </div>
                         </td>

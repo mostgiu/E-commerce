@@ -12,35 +12,50 @@ export default function CategoryProducts() {
   const categoryName = location.state?.categoryName || "Category";
   const { addToCart, addToWishlist } = useContext(CartContext);
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [cartLoadingId, setCartLoadingId] = useState(null);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+  const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async function addProductToCart(productId) {
+    setCartLoadingId(productId);
     if (!localStorage.getItem("userToken")) {
       navigate("/login");
+      setCartLoadingId(null);
       return;
     }
-    await addToCart(productId);
+    try {
+      await Promise.all([addToCart(productId), minLoaderDelay()]);
+    } finally {
+      setCartLoadingId(null);
+    }
   }
 
   async function toggleWishlist(productId) {
+    setWishlistLoadingId(productId);
     if (!localStorage.getItem("userToken")) {
       navigate("/register");
+      setWishlistLoadingId(null);
       return;
     }
 
-    const response = await addToWishlist(productId);
-    if (response?.status < 200 || response?.status >= 300) {
-      return;
-    }
-
-    setWishlistIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
+    try {
+      const [response] = await Promise.all([addToWishlist(productId), minLoaderDelay()]);
+      if (response?.status < 200 || response?.status >= 300) {
+        return;
       }
-      return next;
-    });
+
+      setWishlistIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(productId)) {
+          next.delete(productId);
+        } else {
+          next.add(productId);
+        }
+        return next;
+      });
+    } finally {
+      setWishlistLoadingId(null);
+    }
   }
 
   function getProducts() {
@@ -88,10 +103,17 @@ export default function CategoryProducts() {
             >
               <button
                 onClick={() => toggleWishlist(product._id)}
-                className="absolute top-5 right-5 z-10 h-8 w-8 rounded-full bg-white/95 border border-slate-200 shadow-sm text-slate-600 hover:text-rose-500 cursor-pointer"
+                disabled={wishlistLoadingId === product._id}
+                className="absolute top-5 right-5 z-10 h-8 w-8 rounded-full bg-white/95 border border-slate-200 shadow-sm text-slate-600 hover:text-rose-500 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 aria-label="Toggle wishlist"
               >
-                <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
+                {wishlistLoadingId === product._id ? (
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white">
+                    <i className="fa fa-spinner fa-spin text-xs"></i>
+                  </span>
+                ) : (
+                  <i className={`${wishlistIds.has(product._id) ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}></i>
+                )}
               </button>
 
               <Link to={`/ProductDetails/${product._id}/${product.category?.name}`}>
@@ -119,9 +141,17 @@ export default function CategoryProducts() {
 
               <button
                 onClick={() => addProductToCart(product._id)}
-                className="mt-4 bg-black text-white px-4 py-2 rounded-lg border border-black hover:bg-white hover:text-black absolute bottom-3 left-3 right-3 cursor-pointer transition-colors"
+                disabled={cartLoadingId === product._id}
+                className="mt-4 bg-black text-white px-4 py-2 rounded-lg border border-black hover:bg-white hover:text-black absolute bottom-3 left-3 right-3 cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Add to Cart
+                {cartLoadingId === product._id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <i className="fa fa-spinner fa-spin"></i>
+                    Adding...
+                  </span>
+                ) : (
+                  "Add to Cart"
+                )}
               </button>
             </div>
           ))}
