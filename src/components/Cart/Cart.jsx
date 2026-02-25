@@ -24,6 +24,7 @@ export default function Cart() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [qtyLoadingId, setQtyLoadingId] = useState(null);
+  const [removeLoadingId, setRemoveLoadingId] = useState(null);
   const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // ============ CONTEXT & HOOKS ============
@@ -61,8 +62,16 @@ export default function Cart() {
    * @param {string} productId - The ID of the product to remove
    */
   async function removeProduct(productId) {
-    let response = await removeCartItem(productId);
-    setCartItems(response?.data?.data?.products);
+    setRemoveLoadingId(productId);
+    try {
+      let [response] = await Promise.all([
+        removeCartItem(productId),
+        minLoaderDelay(),
+      ]);
+      setCartItems(response?.data?.data?.products);
+    } finally {
+      setRemoveLoadingId(null);
+    }
   }
 
   /**
@@ -214,9 +223,17 @@ export default function Cart() {
                         </span>
                         <button
                           onClick={() => removeProduct(item.product.id)}
-                          className="text-red-600 text-sm hover:underline"
+                          disabled={removeLoadingId === item.product.id}
+                          className="text-red-600 text-sm hover:underline disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                          Remove
+                          {removeLoadingId === item.product.id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <i className="fa fa-spinner fa-spin"></i>
+                              Removing...
+                            </span>
+                          ) : (
+                            "Remove"
+                          )}
                         </button>
                       </div>
                     </div>
@@ -341,9 +358,17 @@ export default function Cart() {
                         <td className="px-4 lg:px-6 py-4">
                           <button
                             onClick={() => removeProduct(item.product.id)}
-                            className="font-medium text-red-600 hover:underline cursor-pointer"
+                            disabled={removeLoadingId === item.product.id}
+                            className="font-medium text-red-600 hover:underline cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                           >
-                            Remove
+                            {removeLoadingId === item.product.id ? (
+                              <span className="inline-flex items-center gap-2">
+                                <i className="fa fa-spinner fa-spin"></i>
+                                Removing...
+                              </span>
+                            ) : (
+                              "Remove"
+                            )}
                           </button>
                         </td>
                       </tr>

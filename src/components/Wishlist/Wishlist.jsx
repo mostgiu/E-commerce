@@ -9,6 +9,7 @@ export default function Wishlist() {
   const { getWishlist, removeFromWishlist, addToCart } = useContext(CartContext);
   const navigate = useNavigate();
   const [cartLoadingId, setCartLoadingId] = useState(null);
+  const [removeLoadingId, setRemoveLoadingId] = useState(null);
   const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -18,9 +19,17 @@ export default function Wishlist() {
   });
 
   async function handleRemoveFromWishlist(productId) {
-    const response = await removeFromWishlist(productId);
-    if (response?.status >= 200 && response?.status < 300) {
-      refetch();
+    setRemoveLoadingId(productId);
+    try {
+      const [response] = await Promise.all([
+        removeFromWishlist(productId),
+        minLoaderDelay(),
+      ]);
+      if (response?.status >= 200 && response?.status < 300) {
+        refetch();
+      }
+    } finally {
+      setRemoveLoadingId(null);
     }
   }
 
@@ -87,9 +96,17 @@ export default function Wishlist() {
                 <p className="text-indigo-600 font-bold text-lg">{item.price} EGP</p>
                 <button
                   onClick={() => handleRemoveFromWishlist(item._id)}
-                  className="text-sm px-3 py-1.5 rounded border border-black bg-black text-white hover:bg-white hover:text-black transition-colors cursor-pointer"
+                  disabled={removeLoadingId === item._id}
+                  className="text-sm px-3 py-1.5 rounded border border-black bg-black text-white hover:bg-white hover:text-black transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Remove
+                  {removeLoadingId === item._id ? (
+                    <span className="inline-flex items-center gap-2">
+                      <i className="fa fa-spinner fa-spin"></i>
+                      Removing...
+                    </span>
+                  ) : (
+                    "Remove"
+                  )}
                 </button>
               </div>
               <button
