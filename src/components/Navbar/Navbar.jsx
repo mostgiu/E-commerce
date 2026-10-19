@@ -1,35 +1,64 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import Logo from "../../assets/bazarlo-logo.svg";
 import { TokenContext, CartContext } from "../Context/contexts";
-import { useContext } from "react";
+import { LocaleContext, ThemeContext } from "../Context/ThemeContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  let { noOfCartItems, getToCart, getWishlist, wishlistCount, clearCartState } = useContext(CartContext);
-  let { token, setToken } = useContext(TokenContext);
+  const { noOfCartItems, getToCart, getWishlist, wishlistCount, clearCartState } = useContext(CartContext);
+  const { token, setToken } = useContext(TokenContext);
+  const { theme, setTheme } = useContext(ThemeContext);
+  const { locale, setLocale, translations } = useContext(LocaleContext);
+  const t = translations[locale] || translations.en;
+  const { data: categoriesData } = useQuery({
+    queryKey: ["navbarCategories"],
+    queryFn: () => axios.get("https://ecommerce.routemisr.com/api/v1/categories"),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const quickCategories = (categoriesData?.data?.data || []).filter((category) => {
+    const name = category.name?.toLowerCase() || "";
+    return name.includes("men") || name.includes("women") || name.includes("elect");
+  });
+
+  const isDark = theme === "dark";
+
+  function getCategoryIcon(name = "") {
+    const normalized = name.toLowerCase();
+    if (normalized.includes("elect") || normalized.includes("laptop") || normalized.includes("phone")) {
+      return "fa-solid fa-plug-circle-bolt";
+    }
+    if (normalized.includes("men") || normalized.includes("male")) return "fa-solid fa-person";
+    if (normalized.includes("women") || normalized.includes("female") || normalized.includes("lady")) {
+      return "fa-solid fa-person-dress";
+    }
+    return "fa-solid fa-tags";
+  }
 
   const linkClasses = ({ isActive }) =>
-    `pb-1 border-b-2 transition-all ${
+    `pb-1 text-[13px] uppercase tracking-[0.18em] transition-all ${
       isActive
-        ? "border-black text-black"
-        : "border-transparent text-black hover:text-black hover:border-black"
+        ? "text-[var(--text)] underline decoration-[1px] underline-offset-4"
+        : "text-[var(--muted)] hover:text-[var(--text)] hover:underline hover:decoration-[1px] hover:underline-offset-4"
     }`;
 
   const mobileLinkClasses = ({ isActive }) =>
-    `block py-2 transition-all ${
+    `block py-2 text-[12px] uppercase tracking-[0.18em] transition-all ${
       isActive
-        ? "text-black font-semibold border-l-4 border-black pl-3"
-        : "text-black hover:text-black"
+        ? "text-[var(--text)] underline decoration-[1px] underline-offset-4"
+        : "text-[var(--muted)] hover:text-[var(--text)]"
     }`;
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+
   function logout() {
     localStorage.removeItem("userToken");
     setToken(null);
     clearCartState();
     setIsMenuOpen(false);
-    navigate("/Login");
+    navigate("/login");
   }
 
   useEffect(() => {
@@ -42,265 +71,214 @@ export default function Navbar() {
   }, [token, getToCart, getWishlist, clearCartState]);
 
   return (
-    <nav className="bg-white fixed top-0 left-0 right-0 z-50 backdrop-blur-sm p-5">
-      <div className="py-2 px-4 flex items-center justify-between text-black max-w-7xl mx-auto">
-        <Link to="/" className="shrink-0">
-          <img
-            src={Logo}
-            width={64}
-            height={64}
-            alt="Logo"
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24"
-          />
-        </Link>
-
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-10">
-          {token ? (
-            <>
-              <NavLink to="/" className={linkClasses} end>
-                Home
-              </NavLink>
-             
-              <NavLink to="/Brands" className={linkClasses}>
-                Brands
-              </NavLink>
-              <NavLink
-                to="/Cart"
-                className={({ isActive }) =>
-                  `pb-1 border-b-2 transition-all relative ${
-                    isActive
-                      ? "border-black text-black"
-                      : "border-transparent text-black hover:text-black hover:border-black"
-                  }`
-                }
-              >
-                <span className=" px-3">
-                  Cart{" "}
-                  {noOfCartItems > 0 ? (
-                    <div className="text-black bg-white text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">{noOfCartItems}</div>
-                  ) : (
-                    <div className="hidden">0</div>
-                  )}
-                </span>
-              </NavLink>
-              <NavLink to="/Wishlist" className={({ isActive }) => `pb-1 border-b-2 transition-all relative ${
-                    isActive
-                      ? "border-black text-black"
-                      : "border-transparent text-black hover:text-black hover:border-black"
-                  }`}>
-                <span className="px-3">
-                  Wishlist
-                  {wishlistCount > 0 ? (
-                    <div className="text-black bg-white text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">{wishlistCount}</div>
-                  ) : null}
-                </span>
-              </NavLink>
-              <NavLink to="/Categories" className={linkClasses}>
-                Categories
-              </NavLink>
-              <NavLink to="/Products" className={linkClasses}>
-                Products
-              </NavLink>
-            </>
-          ) : null}
-        </div>
-
-        {/* Desktop Auth */}
-        <div className="hidden lg:flex items-center gap-4">
-          {token ? (
-            <button
-              onClick={logout}
-              className="hover:text-black/70 transition-colors flex items-center gap-2"
-            >
-              <i className="fa-solid fa-right-from-bracket"></i>
-              Logout
-            </button>
-          ) : (
-            <>
-              <NavLink to="/Login" className={linkClasses}>
-                Login
-              </NavLink>
-              <NavLink to="/Register" className={linkClasses}>
-                Register
-              </NavLink>
-            </>
-          )}
-        </div>
-
-        {/* Mobile: Cart badge + Hamburger */}
-        <div className="flex items-center gap-3 lg:hidden">
-          {token && (
-            <Link
-              to="/Cart"
-              className="relative p-2 hover:bg-black/10 rounded-lg transition-colors"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              <span className="text-black text-xs font-medium absolute -top-1 -right-3 px-1.5 py-0.5 rounded-full text-center">
-                {noOfCartItems > 0 ? noOfCartItems : ""}
-              </span>
-            </Link>
-          )}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-lg hover:bg-black/10 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            )}
-          </button>
+    <nav className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${isDark ? "bg-[var(--bg)]" : "bg-[var(--bg-elevated)]"}`}>
+      <div className="bg-[var(--color-eucalyptus-mist)] text-[var(--color-obsidian-ink)]">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-4 px-4 py-2 text-center text-[10px] font-medium uppercase tracking-[0.24em] sm:text-[11px]">
+          <span>Free shipping on orders over $250</span>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="lg:hidden bg-transparent border-t border-black/20 px-4 py-4 backdrop-blur-sm">
-          <ul className="flex flex-col gap-3">
+      <div className="border-b border-[var(--line)] bg-[var(--bg-elevated)]/80 backdrop-blur-sm">
+        <div className="mx-auto flex min-h-[70px] max-w-7xl items-center justify-between px-4 py-2 sm:min-h-[82px] sm:px-6">
+          <Link to="/" className="flex shrink-0 items-center" aria-label="Bazarlo home">
+            <span className="text-xl font-medium tracking-[0.18em] text-[var(--text)] sm:text-2xl">
+              BAZARLO
+            </span>
+          </Link>
+
+          <div className="hidden items-center gap-6 lg:flex">
+            <NavLink to="/" className={linkClasses} end>
+              {t.home}
+            </NavLink>
+            <NavLink to="/Brands" className={linkClasses}>
+              {t.brands}
+            </NavLink>
+            <NavLink to="/Cart" className={({ isActive }) => `${linkClasses({ isActive })} relative`}>
+              <span className="inline-flex items-center gap-2">
+                {t.cart}
+                {noOfCartItems > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1.5 text-[10px] font-bold text-[var(--color-obsidian-ink)]">
+                    {noOfCartItems}
+                  </span>
+                ) : null}
+              </span>
+            </NavLink>
+            <NavLink to="/Wishlist" className={({ isActive }) => `${linkClasses({ isActive })} relative`}>
+              <span className="inline-flex items-center gap-2">
+                {t.wishlist}
+                {wishlistCount > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1.5 text-[10px] font-bold text-[var(--color-obsidian-ink)]">
+                    {wishlistCount}
+                  </span>
+                ) : null}
+              </span>
+            </NavLink>
+            <NavLink to="/Categories" className={linkClasses}>
+              {t.categories}
+            </NavLink>
+            <NavLink to="/Products" className={linkClasses}>
+              {t.products}
+            </NavLink>
+          </div>
+
+          <div className="hidden items-center gap-3 lg:flex">
+            <button
+              type="button"
+              onClick={() => setLocale(locale === "en" ? "it" : "en")}
+              className="text-[10px] uppercase tracking-[0.2em] text-[var(--text)]"
+            >
+              {locale === "en" ? "IT" : "EN"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="flex h-9 w-9 items-center justify-center text-[var(--text)]"
+              aria-label="Toggle theme"
+            >
+              <i className={`fa-solid ${theme === "dark" ? "fa-sun" : "fa-moon"}`} />
+            </button>
+
             {token ? (
+              <button
+                onClick={logout}
+                className="text-[10px] uppercase tracking-[0.2em] text-[var(--text)] transition hover:text-[var(--muted)]"
+              >
+                {t.logout}
+              </button>
+            ) : (
+              <>
+                <NavLink to="/Login" className={linkClasses}>
+                  {t.login}
+                </NavLink>
+                <NavLink to="/Register" className={linkClasses}>
+                  {t.register}
+                </NavLink>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setLocale(locale === "en" ? "it" : "en")}
+              className="text-[10px] uppercase tracking-[0.2em] text-[var(--text)]"
+            >
+              {locale === "en" ? "IT" : "EN"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="flex h-8 w-8 items-center justify-center text-[var(--text)]"
+            >
+              <i className={`fa-solid ${theme === "dark" ? "fa-sun" : "fa-moon"}`} />
+            </button>
+
+            {token && (
+              <Link to="/Cart" className="relative flex h-8 w-8 items-center justify-center text-[var(--text)]">
+                <i className="fa-solid fa-bag-shopping text-sm"></i>
+                {noOfCartItems > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-[var(--color-obsidian-ink)]">
+                    {noOfCartItems}
+                  </span>
+                ) : null}
+              </Link>
+            )}
+
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="flex h-8 w-8 items-center justify-center text-[var(--text)]"
+              aria-label="Toggle menu"
+            >
+              <i className={`fa-solid ${isMenuOpen ? "fa-xmark" : "fa-bars"}`} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {quickCategories.length > 0 ? (
+        <div className="border-b border-[var(--line)] bg-[var(--bg)]">
+          <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-2 sm:justify-center sm:px-6">
+            {quickCategories.map((category) => (
+              <Link
+                key={category._id}
+                to={`/categories/${category._id}`}
+                className="shrink-0 border-b border-transparent pb-1 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] transition hover:border-[var(--text)] hover:text-[var(--text)]"
+              >
+                <i className={`${getCategoryIcon(category.name)} mr-1.5`} />
+                {category.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {isMenuOpen && (
+        <div className={`border-t border-[var(--line)] bg-[var(--bg-elevated)] px-4 py-4 lg:hidden ${isDark ? "shadow-[0_16px_30px_rgba(0,0,0,0.18)]" : "shadow-[0_10px_24px_rgba(0,0,0,0.04)]"}`}>
+          <ul className="flex flex-col gap-3">
+            <li>
+              <NavLink to="/" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses} end>
+                {t.home}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/Brands" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                {t.brands}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/Cart" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                <span className="inline-flex items-center gap-2">
+                  {t.cart}
+                  {noOfCartItems > 0 ? <span className="rounded-full bg-[var(--accent)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--color-obsidian-ink)]">{noOfCartItems}</span> : null}
+                </span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/Wishlist" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                <span className="inline-flex items-center gap-2">
+                  {t.wishlist}
+                  {wishlistCount > 0 ? <span className="rounded-full bg-[var(--accent)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--color-obsidian-ink)]">{wishlistCount}</span> : null}
+                </span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/Categories" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                {t.categories}
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/Products" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                {t.products}
+              </NavLink>
+            </li>
+            {token ? (
+              <li>
+                <button
+                  onClick={logout}
+                  className="mt-2 w-full border-t border-[var(--line)] pt-3 text-left text-[12px] uppercase tracking-[0.18em] text-[var(--text)]"
+                >
+                  {t.logout}
+                </button>
+              </li>
+            ) : (
               <>
                 <li>
-                  <NavLink
-                    to="/"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                    end
-                  >
-                    Home
+                  <NavLink to="/Login" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                    {t.login}
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink
-                    to="/Brands"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    Brands
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/Cart"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      Cart
-                      {noOfCartItems > 0 ? (
-                        <span className="text-black text-xs font-medium px-1.5 py-0.5 rounded-full text-center">
-                          {noOfCartItems}
-                        </span>
-                      ) : null}
-                    </span>
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/Wishlist"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      Wishlist
-                      {wishlistCount > 0 ? (
-                        <span className="text-black text-xs font-medium px-1.5 py-0.5 rounded-full text-center">
-                          {wishlistCount}
-                        </span>
-                      ) : null}
-                    </span>
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/Categories"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    Categories
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/Products"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    Products
+                  <NavLink to="/Register" onClick={() => setIsMenuOpen(false)} className={mobileLinkClasses}>
+                    {t.register}
                   </NavLink>
                 </li>
               </>
-            ) : null}
-            <li className="border-t border-black/20 pt-3 mt-2">
-              {token ? (
-                <button
-                  onClick={logout}
-                  className="block py-2 hover:text-black/70 w-full text-left"
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <i className="fa-solid fa-right-from-bracket"></i>
-                    Logout
-                  </span>
-                </button>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <NavLink
-                    to="/Login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    Login
-                  </NavLink>
-                  <NavLink
-                    to="/Register"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={mobileLinkClasses}
-                  >
-                    Register
-                  </NavLink>
-                </div>
-              )}
-            </li>
+            )}
           </ul>
         </div>
       )}
     </nav>
   );
 }
+
+

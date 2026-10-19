@@ -22,14 +22,14 @@ export default function Layout() {
   return (
     <>
       <Navbar />
-      <main className="container mx-auto px-3 sm:px-4 md:px-6 pt-20 sm:pt-24 pb-24 sm:pb-8 min-h-screen max-w-7xl">
+      <main className="relative mx-auto min-h-screen max-w-7xl px-3 pb-24 pt-40 sm:px-4 sm:pb-8 sm:pt-44 md:px-6">
         <Outlet />
       </main>
 
       {showBackToTop ? (
         <button
           onClick={goToTop}
-          className="fixed bottom-6 right-6 z-50 h-11 w-11 rounded-full bg-black text-white border border-black hover:bg-white hover:text-black transition-colors shadow-md cursor-pointer"
+          className="fixed bottom-6 right-6 z-50 h-11 w-11 cursor-pointer border border-[var(--line)] bg-[var(--bg-elevated)] text-[var(--text)] shadow-[0_12px_24px_rgba(0,0,0,0.06)] transition-colors hover:border-[var(--text)]"
           aria-label="Back to top"
         >
           <i className="fa-solid fa-arrow-up"></i>

@@ -11,15 +11,19 @@ import CartContextProvider from './components/Context/CartContext.jsx'
 import 'flowbite/dist/flowbite.css';
 import { Provider } from 'react-redux'
 import { store } from './components/Redux/store.js'
+import { LocaleContextProvider, ThemeContextProvider } from './components/Context/ThemeContext.jsx'
+
 createRoot(document.getElementById('root')).render(
   <TokenContextProvider>
     <Provider store={store}>
-    <CartContextProvider>
-  <StrictMode>
-    <App />
-  </StrictMode>
-  </CartContextProvider>
-  </Provider>
-  </TokenContextProvider>
-)
- 
+      <CartContextProvider>
+        <ThemeContextProvider>
+          <LocaleContextProvider>
+            <StrictMode>
+              <App />
+            </StrictMode>
+          </LocaleContextProvider>
+        </ThemeContextProvider>
+      </CartContextProvider>
+    </Provider>  </TokenContextProvider>
+) 

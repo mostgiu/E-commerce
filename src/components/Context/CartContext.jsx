@@ -1,19 +1,32 @@
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CartContext } from "./contexts";
 
 export default function CartContextProvider(props) {
-  const [noOfCartItems, setNoOfCartItems] = useState(null);
-  const [totalCartAmount, setTotalcartAmount] = useState(0);
-  const [cartId, setCartId] = useState(null); // Store cart ID for checkout
+  const [noOfCartItems, setNoOfCartItems] = useState(() => Number(localStorage.getItem("luxury-cart-count") || 0));
+  const [totalCartAmount, setTotalcartAmount] = useState(() => Number(localStorage.getItem("luxury-cart-total") || 0));
+  const [cartId, setCartId] = useState(() => localStorage.getItem("luxury-cart-id") || null); // Store cart ID for checkout
   const [wishlistCount, setWishlistCount] = useState(0);
+
+  useEffect(() => {
+    localStorage.setItem("luxury-cart-count", String(noOfCartItems || 0));
+    localStorage.setItem("luxury-cart-total", String(totalCartAmount || 0));
+    if (cartId) {
+      localStorage.setItem("luxury-cart-id", cartId);
+    } else {
+      localStorage.removeItem("luxury-cart-id");
+    }
+  }, [noOfCartItems, totalCartAmount, cartId]);
 
   function clearCartState() {
     setNoOfCartItems(0);
     setTotalcartAmount(0);
     setCartId(null);
     setWishlistCount(0);
+    localStorage.removeItem("luxury-cart-count");
+    localStorage.removeItem("luxury-cart-total");
+    localStorage.removeItem("luxury-cart-id");
   }
   
   // Function to get fresh headers with current token
@@ -254,6 +267,47 @@ export default function CartContextProvider(props) {
       });
   }
 
+  async function clearWishlist() {
+    const headers = getHeaders();
+    if (!headers.token) {
+      return { status: 401, data: { error: "Please login first" } };
+    }
+
+    try {
+      const currentWishlistResponse = await axios.get("https://ecommerce.routemisr.com/api/v1/wishlist", {
+        headers,
+      });
+
+      const wishlistItems = currentWishlistResponse?.data?.data || [];
+
+      if (!wishlistItems.length) {
+        setWishlistCount(0);
+        toast.success("Wishlist is already empty", { duration: 1000 });
+        return { status: 200, data: { message: "Wishlist is already empty", data: [] } };
+      }
+
+      const deleteRequests = wishlistItems.map((item) => {
+        const productId = item?._id || item?.id || item?.product?._id;
+
+        if (!productId) {
+          return Promise.resolve();
+        }
+
+        return axios.delete(`https://ecommerce.routemisr.com/api/v1/wishlist/${productId}`, {
+          headers,
+        });
+      });
+
+      await Promise.all(deleteRequests);
+      setWishlistCount(0);
+      toast.success("Wishlist cleared", { duration: 1000 });
+      return { status: 200, data: { message: "Wishlist cleared", data: [] } };
+    } catch (error) {
+      console.error("❌ Clear Wishlist Error:", error.response?.status, error.response?.data);
+      return handleApiError(error, "Failed to clear wishlist");
+    }
+  }
+
 
 
   return (
@@ -271,6 +325,7 @@ export default function CartContextProvider(props) {
         cashPayment,
         addToWishlist,
         removeFromWishlist,
+        clearWishlist,
         getWishlist,
         wishlistCount,
         clearCartState

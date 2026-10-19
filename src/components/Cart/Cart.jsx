@@ -1,33 +1,46 @@
-/**
- * Cart Component - Displays shopping cart items and allows users to manage their cart
- * Features:
- * - View all cart items
- * - Update product quantities
- * - Remove items from cart
- * - Clear entire cart
- * - Responsive layout (mobile card view, desktop table view)
- * - Proceed to checkout
- */
-
-import React, { useCallback, useEffect, useState } from "react";
-import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { Dropdown, DropdownItem, DropdownDivider } from "flowbite-react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Style from "./Cart.module.css";
 import { CartContext } from "../Context/contexts";
 import Loader from "../Loader/Loader";
+import PaymentLogo from "../PaymentLogo/PaymentLogo";
+
+const paymentMethods = [
+  {
+    value: "cash On Delivery",
+    label: "Cash on delivery",
+    icon: "fa-money-bill-wave",
+  },
+  {
+    value: "credit card",
+    label: "Credit card",
+  },
+  {
+    value: "paypal",
+    label: "PayPal",
+  },
+  {
+    value: "klarna",
+    label: "Klarna",
+  },
+];
+
+function formatPrice(amount) {
+  return Number(amount || 0).toLocaleString("en-EG", {
+    maximumFractionDigits: 2,
+  });
+}
 
 export default function Cart() {
-  // ============ STATE MANAGEMENT ============
   const [cartItems, setCartItems] = useState([]);
-  // selected payment method for debugging / route state (not used)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [qtyLoadingId, setQtyLoadingId] = useState(null);
   const [removeLoadingId, setRemoveLoadingId] = useState(null);
-  const minLoaderDelay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
+  const [isClearing, setIsClearing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0].value);
 
-  // ============ CONTEXT & HOOKS ============
   const {
     getToCart,
     removeCartItem,
@@ -35,377 +48,335 @@ export default function Cart() {
     ClearCart,
     totalCartAmount,
   } = useContext(CartContext);
-
   const navigate = useNavigate();
 
-  // ============ API CALLS ============
-  /**
-   * Fetch all cart items from the API
-   */
   const getAllCart = useCallback(async () => {
-    let response = await getToCart();
-    if (response?.status === 500 || response?.response?.status === 500) {
-      setError("Server error: The API is temporarily unavailable. Please try again in a few moments.");
-      setIsLoading(false);
-    } else if (response?.data?.data?.products) {
-      setCartItems(response.data.data.products);
-      setError(null);
-      setIsLoading(false);
-    } else {
-      setError("Failed to load cart. Please try again.");
+    try {
+      const response = await getToCart();
+      const products = response?.data?.data?.products;
+
+      if (Array.isArray(products)) {
+        setCartItems(products);
+        setError(null);
+      } else {
+        setError(
+          response?.status === 500 || response?.response?.status === 500
+            ? "The service is temporarily unavailable. Please try again shortly."
+            : "We couldn't load your cart. Please try again.",
+        );
+      }
+    } catch {
+      setError("We couldn't load your cart. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   }, [getToCart]);
 
-  /**
-   * Remove a specific product from the cart
-   * @param {string} productId - The ID of the product to remove
-   */
-  async function removeProduct(productId) {
-    setRemoveLoadingId(productId);
-    try {
-      let [response] = await Promise.all([
-        removeCartItem(productId),
-        minLoaderDelay(),
-      ]);
-      setCartItems(response?.data?.data?.products);
-    } finally {
-      setRemoveLoadingId(null);
-    }
-  }
+  useEffect(() => {
+    const timeoutId = window.setTimeout(getAllCart, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [getAllCart]);
 
-  /**
-   * Update the quantity of a product in the cart
-   * @param {string} productId - The ID of the product to update
-   * @param {number} count - The new quantity
-   */
   async function updateCartProduct(productId, count) {
+    setActionError(null);
     setQtyLoadingId(productId);
     try {
-      let [response] = await Promise.all([
+      const [response] = await Promise.all([
         updateProduct(productId, count),
-        minLoaderDelay(),
+        new Promise((resolve) => window.setTimeout(resolve, 350)),
       ]);
-      setCartItems(response?.data?.data?.products);
+      const products = response?.data?.data?.products;
+      if (Array.isArray(products)) {
+        setCartItems(products);
+      } else {
+        setActionError("We couldn't update this item. Please try again.");
+      }
+    } catch {
+      setActionError("We couldn't update this item. Please try again.");
     } finally {
       setQtyLoadingId(null);
     }
   }
 
-  /**
-   * Clear all items from the cart
-   */
-  async function ClearAllCart() {
-    await ClearCart();
-    setCartItems([]);
+  async function removeProduct(productId) {
+    setActionError(null);
+    setRemoveLoadingId(productId);
+    try {
+      const [response] = await Promise.all([
+        removeCartItem(productId),
+        new Promise((resolve) => window.setTimeout(resolve, 350)),
+      ]);
+      const products = response?.data?.data?.products;
+      if (
+        response?.status >= 200 &&
+        response.status < 300 &&
+        Array.isArray(products)
+      ) {
+        setCartItems(products);
+      } else {
+        setActionError("We couldn't remove this item. Please try again.");
+      }
+    } catch {
+      setActionError("We couldn't remove this item. Please try again.");
+    } finally {
+      setRemoveLoadingId(null);
+    }
   }
 
-  // ============ EFFECTS ============
-  /**
-   * Fetch cart items on component mount
-   */
-  // Fetch cart items on mount. Defer call to avoid synchronous setState in effect.
-  useEffect(() => {
-    const t = setTimeout(() => {
-      getAllCart();
-    }, 0);
-    return () => clearTimeout(t);
-  }, [getAllCart]);
+  async function clearCart() {
+    setActionError(null);
+    setIsClearing(true);
+    try {
+      const response = await ClearCart();
+      if (response?.status >= 200 && response.status < 300) {
+        setCartItems([]);
+      } else {
+        setActionError("We couldn't clear your cart. Please try again.");
+      }
+    } catch {
+      setActionError("We couldn't clear your cart. Please try again.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
 
-  // ============ RENDER ============
+  function retryLoadingCart() {
+    setIsLoading(true);
+    setError(null);
+    getAllCart();
+  }
+
+  if (isLoading) {
+    return (
+      <div className={Style.loading}>
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className={Style.errorState} role="alert">
+        <span className={Style.stateIcon}>
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+        </span>
+        <p className={Style.eyebrow}>Something went wrong</p>
+        <h1 className={Style.stateTitle}>Your cart didn’t load</h1>
+        <p className={Style.stateText}>{error}</p>
+        <button className={Style.primaryButton} onClick={retryLoadingCart} type="button">
+          Try again
+        </button>
+      </section>
+    );
+  }
+
+  const itemCount = cartItems.reduce((count, item) => count + item.count, 0);
+
   return (
-    <>
-      <div className="mx-auto min-h-screen flex items-center justify-center px-2">
-        {/* Show loader while fetching data */}
-        {isLoading ? (
-          <Loader />
-        ) : error ? (
-          /* Show error message if API fails */
-          <div className="container mx-auto p-6 bg-red-50 border border-red-200 rounded-lg max-w-2xl">
-            <h2 className="text-xl font-bold text-red-700 mb-3">⚠️ Error Loading Cart</h2>
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => {
-                setIsLoading(true);
-                getAllCart();
-              }}
-              className="bg-black text-white px-4 py-2 rounded border border-black hover:bg-white hover:text-black transition cursor-pointer"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : (
-          <div className="relative container mx-auto p-3 sm:p-4 md:p-6 bg-white rounded-xl shadow-lg border border-gray-200 max-w-7xl">
-            {/* Header: Title and Clear Cart Button */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg sm:text-xl font-bold">Your Cart</h2>
-              {(cartItems ?? []).length > 0 ? (
-                <button
-                  onClick={() => ClearAllCart()}
-                  className="bg-red-700 text-white px-3 py-2 rounded-xl cursor-pointer hover:bg-red-800 transition-all duration-300 text-sm sm:text-base"
-                >
-                  Clear Cart
-                </button>
-              ) : null}
-            </div>
+    <div className={Style.page}>
+      <div className={Style.breadcrumbs} aria-label="Breadcrumb">
+        <Link to="/">Home</Link>
+        <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+        <span aria-current="page">Shopping bag</span>
+      </div>
 
-            {/* ====== MOBILE VIEW ====== */}
-            {/* Card-based layout for mobile devices */}
-            <div className="block md:hidden space-y-4">
-              {(cartItems ?? []).length === 0 ? (
-                <p className="text-center py-8 text-gray-500">
-                  Your cart is empty
-                </p>
-              ) : (
-                (cartItems ?? []).map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="border rounded-lg p-4 bg-gray-50 flex flex-col gap-3"
-                  >
-                    {/* Product Image and Info */}
-                    <div className="flex gap-3">
-                      <img
-                        src={item.product.imageCover}
-                        className="w-20 h-20 object-cover rounded-lg shrink-0"
-                        alt={item.product.title}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm line-clamp-2">
-                          {item.product.title}
-                        </p>
-                        <p className="text-gray-600 text-sm">
-                          {item.price} EGP
-                        </p>
-                      </div>
-                    </div>
+      <header className={Style.header}>
+        <div>
+          <p className={Style.eyebrow}>A little something for you</p>
+          <h1 className={Style.title}>Your shopping bag</h1>
+          <p className={Style.subtitle}>
+            {itemCount === 0
+              ? "Your next favourite thing is just around the corner."
+              : `${itemCount} ${itemCount === 1 ? "item" : "items"} picked just for you.`}
+          </p>
+        </div>
+        {cartItems.length > 0 ? (
+          <button
+            className={Style.clearButton}
+            disabled={isClearing}
+            onClick={clearCart}
+            type="button"
+          >
+            {isClearing ? (
+              <i className="fa-solid fa-spinner fa-spin" aria-hidden="true" />
+            ) : (
+              <i className="fa-regular fa-trash-can" aria-hidden="true" />
+            )}
+            Clear bag
+          </button>
+        ) : null}
+      </header>
 
-                    {/* Quantity and Remove Button */}
-                    <div className="flex items-center justify-between">
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() =>
-                            updateCartProduct(item.product.id, item.count - 1)
-                          }
-                          disabled={qtyLoadingId === item.product.id}
-                          type="button"
-                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {qtyLoadingId === item.product.id ? (
-                            <i className="fa fa-spinner fa-spin"></i>
-                          ) : (
-                            "−"
-                          )}
-                        </button>
-                        <span className="w-8 text-center font-medium">
-                          {item.count}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateCartProduct(item.product.id, item.count + 1)
-                          }
-                          disabled={qtyLoadingId === item.product.id}
-                          type="button"
-                          className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-8 w-8 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {qtyLoadingId === item.product.id ? (
-                            <i className="fa fa-spinner fa-spin"></i>
-                          ) : (
-                            "+"
-                          )}
-                        </button>
-                      </div>
+      {actionError ? (
+        <p className={Style.actionError} role="alert">
+          <i className="fa-solid fa-circle-exclamation" aria-hidden="true" />
+          {actionError}
+        </p>
+      ) : null}
 
-                      {/* Price and Remove */}
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="font-semibold">
-                          {item.price * item.count} EGP
-                        </span>
-                        <button
-                          onClick={() => removeProduct(item.product.id)}
-                          disabled={removeLoadingId === item.product.id}
-                          className="text-red-600 text-sm hover:underline disabled:opacity-70 disabled:cursor-not-allowed"
-                        >
-                          {removeLoadingId === item.product.id ? (
-                            <span className="inline-flex items-center gap-2">
-                              <i className="fa fa-spinner fa-spin"></i>
-                              Removing...
-                            </span>
-                          ) : (
-                            "Remove"
-                          )}
-                        </button>
-                      </div>
+      {cartItems.length === 0 ? (
+        <section className={Style.emptyState}>
+          <span className={Style.stateIcon}>
+            <i className="fa-solid fa-bag-shopping" aria-hidden="true" />
+          </span>
+          <p className={Style.eyebrow}>Nothing in here (yet)</p>
+          <h2 className={Style.stateTitle}>Your bag is taking a breather</h2>
+          <p className={Style.stateText}>
+            Explore the collection and find something you’ll love.
+          </p>
+          <Link className={Style.primaryButton} to="/Products">
+            Explore the collection
+            <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+          </Link>
+        </section>
+      ) : (
+        <div className={Style.content}>
+          <section className={Style.items} aria-label="Items in your bag">
+            {cartItems.map((item) => {
+              const productId = item.product.id;
+              const isUpdating = qtyLoadingId === productId;
+              const isRemoving = removeLoadingId === productId;
+
+              return (
+                <article className={Style.item} key={productId}>
+                  <div className={Style.product}>
+                    <img
+                      className={Style.productImage}
+                      src={item.product.imageCover}
+                      alt={item.product.title}
+                    />
+                    <div className={Style.productInfo}>
+                      <h2 className={Style.productTitle}>{item.product.title}</h2>
+                      <p className={Style.unitPrice}>
+                        {formatPrice(item.price)} EGP <span>each</span>
+                      </p>
+                      <button
+                        aria-label={`Remove ${item.product.title} from your cart`}
+                        className={Style.removeButton}
+                        disabled={isRemoving || isUpdating || isClearing}
+                        onClick={() => removeProduct(productId)}
+                        type="button"
+                      >
+                        {isRemoving ? (
+                          <>
+                            <i className="fa-solid fa-spinner fa-spin" aria-hidden="true" />
+                            Removing item…
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa-regular fa-trash-can" aria-hidden="true" />
+                            Remove item
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
 
-            {/* ====== DESKTOP VIEW ====== */}
-            {/* Table-based layout for desktop and larger screens */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm text-left rtl:text-right text-body">
-                {/* Table Header */}
-                <thead className="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
-                  <tr>
-                    <th scope="col" className="px-4 lg:px-6 py-3">
-                      <span className="sr-only">Image</span>
-                    </th>
-                    <th scope="col" className="px-4 lg:px-6 py-3 font-medium">
-                      Product
-                    </th>
-                    <th scope="col" className="px-4 lg:px-6 py-3 font-medium">
-                      Qty
-                    </th>
-                    <th scope="col" className="px-4 lg:px-6 py-3 font-medium">
-                      Price
-                    </th>
-                    <th scope="col" className="px-4 lg:px-6 py-3 font-medium">
-                      Total
-                    </th>
-                    <th scope="col" className="px-4 lg:px-6 py-3 font-medium">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-
-                {/* Table Body */}
-                <tbody>
-                  {(cartItems ?? []).length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-6 py-12 text-center text-gray-500"
+                  <div className={Style.itemControls}>
+                    <div
+                      aria-label={`Quantity of ${item.product.title}`}
+                      className={Style.quantity}
+                      role="group"
+                    >
+                      <button
+                        aria-label={`Decrease quantity of ${item.product.title}`}
+                        disabled={isUpdating || isRemoving || isClearing || item.count <= 1}
+                        onClick={() => updateCartProduct(productId, item.count - 1)}
+                        type="button"
                       >
-                        Your cart is empty
-                      </td>
-                    </tr>
+                        <i className="fa-solid fa-minus" aria-hidden="true" />
+                      </button>
+                      <span aria-live="polite">
+                        {isUpdating ? (
+                          <i className="fa-solid fa-spinner fa-spin" aria-label="Updating" />
+                        ) : (
+                          item.count
+                        )}
+                      </span>
+                      <button
+                        aria-label={`Increase quantity of ${item.product.title}`}
+                        disabled={isUpdating || isRemoving || isClearing}
+                        onClick={() => updateCartProduct(productId, item.count + 1)}
+                        type="button"
+                      >
+                        <i className="fa-solid fa-plus" aria-hidden="true" />
+                      </button>
+                    </div>
+                    <p className={Style.lineTotal}>
+                      {formatPrice(item.price * item.count)} <span>EGP</span>
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
+            <Link className={Style.continueLink} to="/Products">
+              <i className="fa-solid fa-arrow-left" aria-hidden="true" />
+              Continue shopping
+            </Link>
+          </section>
+
+          <aside className={Style.summary}>
+            <p className={Style.eyebrow}>The details</p>
+            <h2 className={Style.summaryTitle}>Order summary</h2>
+
+            <div className={Style.summaryRow}>
+              <span>Subtotal <span className={Style.muted}>({itemCount} items)</span></span>
+              <span>{formatPrice(totalCartAmount)} EGP</span>
+            </div>
+            <div className={Style.summaryDivider} />
+            <div className={`${Style.summaryRow} ${Style.totalRow}`}>
+              <span>Total</span>
+              <span>{formatPrice(totalCartAmount)} <small>EGP</small></span>
+            </div>
+            <p className={Style.taxNote}>Delivery details are added at checkout.</p>
+
+            <fieldset className={Style.paymentOptions}>
+              <legend>Choose how to pay</legend>
+              {paymentMethods.map((method) => (
+                <button
+                  aria-pressed={paymentMethod === method.value}
+                  className={`${Style.paymentOption} ${
+                    paymentMethod === method.value ? Style.paymentSelected : ""
+                  }`}
+                  key={method.value}
+                  onClick={() => setPaymentMethod(method.value)}
+                  type="button"
+                >
+                  {method.value === "credit card" ? (
+                    <PaymentLogo method="mastercard" />
+                  ) : method.icon ? (
+                    <i className={`fa-solid ${method.icon}`} aria-hidden="true" />
                   ) : (
-                    (cartItems ?? []).map((item) => (
-                      <tr
-                        key={item.product.id}
-                        className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium"
-                      >
-                        {/* Product Image */}
-                        <td className="p-3 lg:p-4">
-                          <img
-                            src={item.product.imageCover}
-                            className="w-14 h-14 lg:w-20 lg:h-20 object-cover rounded"
-                            alt={item.product.title}
-                          />
-                        </td>
-
-                        {/* Product Name */}
-                        <td className="px-4 lg:px-6 py-4 font-semibold text-heading max-w-50">
-                          {item.product.title}
-                        </td>
-
-                        {/* Quantity Controls */}
-                        <td className="px-4 lg:px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() =>
-                                updateCartProduct(
-                                  item.product.id,
-                                  item.count - 1,
-                                )
-                              }
-                              disabled={qtyLoadingId === item.product.id}
-                              type="button"
-                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                              {qtyLoadingId === item.product.id ? (
-                                <i className="fa fa-spinner fa-spin"></i>
-                              ) : (
-                                "−"
-                              )}
-                            </button>
-                            <span className="w-6 text-center">
-                              {item.count}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateCartProduct(
-                                  item.product.id,
-                                  item.count + 1,
-                                )
-                              }
-                              disabled={qtyLoadingId === item.product.id}
-                              type="button"
-                              className="flex items-center justify-center bg-white border border-slate-300 hover:bg-black hover:text-white rounded-full h-7 w-7 text-sm cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                              {qtyLoadingId === item.product.id ? (
-                                <i className="fa fa-spinner fa-spin"></i>
-                              ) : (
-                                "+"
-                              )}
-                            </button>
-                          </div>
-                        </td>
-
-                        {/* Unit Price */}
-                        <td className="px-4 lg:px-6 py-4 font-semibold">
-                          {item.price} EGP
-                        </td>
-
-                        {/* Total Price */}
-                        <td className="px-4 lg:px-6 py-4 font-semibold">
-                          {item.price * item.count} EGP
-                        </td>
-
-                        {/* Remove Button */}
-                        <td className="px-4 lg:px-6 py-4">
-                          <button
-                            onClick={() => removeProduct(item.product.id)}
-                            disabled={removeLoadingId === item.product.id}
-                            className="font-medium text-red-600 hover:underline cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                          >
-                            {removeLoadingId === item.product.id ? (
-                              <span className="inline-flex items-center gap-2">
-                                <i className="fa fa-spinner fa-spin"></i>
-                                Removing...
-                              </span>
-                            ) : (
-                              "Remove"
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                    <PaymentLogo method={method.value} />
                   )}
-                </tbody>
-              </table>
-            </div>
+                  {method.value !== "klarna" ? <span>{method.label}</span> : null}
+                  <span className={Style.radio}>
+                    {paymentMethod === method.value ? (
+                      <i className="fa-solid fa-check" aria-hidden="true" />
+                    ) : null}
+                  </span>
+                </button>
+              ))}
+            </fieldset>
 
-            {/* ====== CART FOOTER ====== */}
-            {/* Display total amount and payment options dropdown */}
-            {(cartItems ?? []).length > 0 ? (
-              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
-                <span className="text-lg font-bold text-slate-800">Total Amount</span>
-                <span className="text-xl font-bold text-slate-900">{totalCartAmount} EGP</span>
+            <button
+              className={`${Style.primaryButton} ${Style.checkoutButton}`}
+              onClick={() =>
+                navigate("/checkout", { state: { paymentMethod } })
+              }
+              type="button"
+            >
+              Continue to checkout
+              <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+            </button>
 
-                <Dropdown label="Payment Options" color="dark">
-                  <DropdownItem
-                      onClick={() => {
-                        navigate("/checkout", { state: { paymentMethod: "cash On Delivery" } });
-                      }}
-                    >
-                    💵 Cash
-                  </DropdownItem>
-                  <DropdownItem
-                      onClick={() => {
-                        navigate("/checkout", { state: { paymentMethod: "credit card" } });
-                      }}
-                    >
-                    💳 Credit Card
-                  </DropdownItem>
-                </Dropdown>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </div>
-    </>
+            <p className={Style.secureNote}>
+              <i className="fa-solid fa-lock" aria-hidden="true" />
+              Secure checkout
+            </p>
+          </aside>
+        </div>
+      )}
+    </div>
   );
 }

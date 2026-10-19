@@ -6,7 +6,7 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isDevelopment = mode === 'development';
-  const isVercel = process.env.VERCEL === '1';
+  const isVercel = Boolean(process.env.VERCEL);
 
   return {
     base: isDevelopment || isVercel ? '/' : '/E-commerce/',
